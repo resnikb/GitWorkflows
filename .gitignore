@@ -1,0 +1,11 @@
+
+[Bb]in/
+[Oo]bj/
+_ReSharper*/
+*.[Cc]ache
+[Tt]humbs.db
+*.user
+*.suo
+*.bak
+*.ncb
+*.log
