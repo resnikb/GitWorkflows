@@ -1,0 +1,11 @@
+<nlog xmlns="http://www.nlog-project.org/schemas/NLog.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <targets async="true">
+    <target name="VsOutputPane" xsi:type="VsOutputPaneTarget" PaneName="Git Workflows" Guid="5F5006ED-57B7-4E04-A7F5-24FD16CD7A6F" layout="${message}"/>
+    <target name="ExecOutput" xsi:type="VsOutputPaneTarget" PaneName="Git Workflows" Guid="5F5006ED-57B7-4E04-A7F5-24FD16CD7A6F" layout="${message}"/>
+  </targets>
+
+  <rules>
+    <logger name="GitWorkflows.Package.Subprocess.Runner*" minlevel="Debug" writeTo="ExecOutput" final="true"/>
+    <logger name="*" minlevel="Debug" writeTo="VsOutputPane"/>
+  </rules>
+</nlog>

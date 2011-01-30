@@ -1,0 +1,44 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitWorkflows.Package", "GitWorkflows.Package\GitWorkflows.Package.csproj", "{3AE5439C-D568-4827-BA19-2575E3189EAE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitWorkflows.Package.IntegrationTests", "GitWorkflows.Package.IntegrationTests\GitWorkflows.Package.IntegrationTests.csproj", "{13964231-668E-4AD2-B23E-9C8F2012F65F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{056049E9-15B6-4285-8083-70CF1F0F8390}"
+	ProjectSection(SolutionItems) = preProject
+		IntegrationTests.testsettings = IntegrationTests.testsettings
+		UnitTests.testsettings = UnitTests.testsettings
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitWorkflows.Package.Tests", "GitWorkflows.Package.Tests\GitWorkflows.Package.Tests.csproj", "{094DB287-211A-4999-A8B0-D77A2D8CA418}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitWorkflows.Tests", "GitWorkflows.Tests\GitWorkflows.Tests.csproj", "{7EABAE26-E8EA-49DE-A9A3-8DE4702F8090}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3AE5439C-D568-4827-BA19-2575E3189EAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AE5439C-D568-4827-BA19-2575E3189EAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AE5439C-D568-4827-BA19-2575E3189EAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AE5439C-D568-4827-BA19-2575E3189EAE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13964231-668E-4AD2-B23E-9C8F2012F65F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13964231-668E-4AD2-B23E-9C8F2012F65F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13964231-668E-4AD2-B23E-9C8F2012F65F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13964231-668E-4AD2-B23E-9C8F2012F65F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{094DB287-211A-4999-A8B0-D77A2D8CA418}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{094DB287-211A-4999-A8B0-D77A2D8CA418}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{094DB287-211A-4999-A8B0-D77A2D8CA418}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{094DB287-211A-4999-A8B0-D77A2D8CA418}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7EABAE26-E8EA-49DE-A9A3-8DE4702F8090}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7EABAE26-E8EA-49DE-A9A3-8DE4702F8090}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7EABAE26-E8EA-49DE-A9A3-8DE4702F8090}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7EABAE26-E8EA-49DE-A9A3-8DE4702F8090}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
