@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:AttachedProperties="clr-namespace:GitWorkflows.Package.AttachedProperties">
 
     <Style TargetType="{x:Type Button}" x:Key="DialogButtonStyle">
         <Setter Property="Margin" Value="5,0,0,0"/>
@@ -14,6 +15,7 @@
     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource DialogButtonStyle}" x:Key="OkButtonStyle">
         <Setter Property="Content" Value="OK"/>
         <Setter Property="IsDefault" Value="True"/>
+        <Setter Property="AttachedProperties:ButtonService.Result" Value="True"/>
     </Style>
     
     <Style TargetType="{x:Type StackPanel}" x:Key="ButtonPanelStyle">
