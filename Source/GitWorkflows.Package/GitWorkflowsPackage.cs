@@ -79,9 +79,6 @@ namespace GitWorkflows.Package
             var nlogConfigPath = System.IO.Path.Combine(myDirectory, "config.nlog");
             LogManager.Configuration = new XmlLoggingConfiguration(nlogConfigPath);
 
-            var logger = LogManager.GetLogger(GetType().FullName);
-            logger.Debug("Configuring internal container");
-
             _partCatalog = new AssemblyCatalog(Assembly.GetExecutingAssembly());
             _partContainer = new CompositionContainer(_partCatalog);
             
@@ -93,25 +90,8 @@ namespace GitWorkflows.Package
 
             _partContainer.Compose(compositionBatch);
 
-//            LogManager.OutputWindowService = _partContainer.GetExportedValue<IOutputWindowService>();
-
-            // Create all exported parts
-            logger.Debug("Creating parts");
+            // Create all commands
             _partContainer.GetExportedValue<ICommandService>();
-
-            // Add our command handlers for menu (commands must exist in the .vsct file)
-//            OleMenuCommandService mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
-//            if ( null != mcs )
-//            {
-                // Create the command for the menu item.
-//                CommandID menuCommandID = new CommandID(Constants.guidPackageCmdSet, (int)PkgCmdIDList.cmdidCommit);
-//                MenuCommand menuItem = new MenuCommand(MenuItemCallback, menuCommandID );
-//                mcs.AddCommand( menuItem );
-                // Create the command for the tool window
-//                CommandID toolwndCommandID = new CommandID(Constants.guidPackageCmdSet, (int)PkgCmdIDList.cmdidPendingChanges);
-//                MenuCommand menuToolWin = new MenuCommand(ShowToolWindow, toolwndCommandID);
-//                mcs.AddCommand( menuToolWin );
-//            }
         }
 
         protected override void Dispose(bool disposing)
