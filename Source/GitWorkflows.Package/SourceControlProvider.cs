@@ -19,8 +19,9 @@ namespace GitWorkflows.Package
     {
         private static readonly Logger Log = LogManager.GetLogger(typeof(SourceControlProvider).FullName);
 
-        private readonly ISolutionService _solutionService;
-        private readonly Cache<Status> _status;
+        [Import]
+        private IGitService _gitService;
+
         private bool _disposed;
         private bool _active;
 
@@ -28,18 +29,12 @@ namespace GitWorkflows.Package
         public event EventHandler Deactivated;
 
         [ImportingConstructor]
-        internal SourceControlProvider(IServiceProvider serviceLocator, IServiceContainer serviceContainer, ISolutionService solutionService)
+        internal SourceControlProvider(IServiceProvider serviceLocator, IServiceContainer serviceContainer)
         {
-            _solutionService = solutionService;
-
             // Register the provider with the source control manager
             // If the package is to become active, this will also callback on OnActiveStateChange and the menu commands will be enabled
             var rscp = serviceLocator.GetService<IVsRegisterScciProvider>();
             rscp.RegisterSourceControlProvider(Constants.guidSccProvider);
-
-            _status = new Cache<Status>(() => _solutionService.WorkingTree.GetStatus());
-            _solutionService.WorkingTreeChanged += (sender, e) => _status.Invalidate();
-            _solutionService.RepositoryChanged += (sender, e) => _status.Invalidate();
 
             serviceContainer.AddService(GetType(), this, true);
         }
@@ -131,7 +126,7 @@ namespace GitWorkflows.Package
                 return VSConstants.S_OK;
             }
 
-            var status = _status.Value.GetStatusOf(rgpszFullPaths[0]);
+            var status = _gitService.GetStatusOf(rgpszFullPaths[0]);
             switch (status)
             {
                 case FileStatus.Untracked:

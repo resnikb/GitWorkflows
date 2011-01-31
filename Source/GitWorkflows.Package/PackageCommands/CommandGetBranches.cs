@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Runtime.InteropServices;
-using GitWorkflows.Package.Common;
+using GitWorkflows.Package.Git;
 using GitWorkflows.Package.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 
@@ -11,19 +11,16 @@ namespace GitWorkflows.Package.PackageCommands
     [Export(typeof(MenuCommand))]
     class CommandGetBranches : MenuCommand
     {
-        private readonly ISolutionService _solutionService;
+        [Import]
+        private IBranchManager _branchManager;
 
-        private readonly Cache<string[]> _branches;
+        [Import]
+        private IGitService _gitService;
 
         [ImportingConstructor]
-        public CommandGetBranches(ISolutionService solutionService)
+        public CommandGetBranches(IGitService solutionService)
             : base(Constants.guidPackageCmdSet, Constants.idBranchComboGetBranches)
-        {
-            _solutionService = solutionService;
-            _branches = new Cache<string[]>(() => solutionService.IsControlledByGit ? solutionService.WorkingTree.Branches.ToArray() : null);
-            solutionService.SolutionChanged += (sender, e) => _branches.Invalidate();
-            solutionService.RepositoryChanged += (sender, e) => _branches.Invalidate();
-        }
+        {}
 
         protected override void Execute(object sender, EventArgs e)
         {
@@ -31,11 +28,10 @@ namespace GitWorkflows.Package.PackageCommands
                 return;
 
             var eventArgs = (OleMenuCmdEventArgs)e;
-
-            Marshal.GetNativeVariantForObject(_branches.Value, eventArgs.OutValue);
+            Marshal.GetNativeVariantForObject(_branchManager.Branches.Select(b => b.Name).ToArray(), eventArgs.OutValue);
         }
 
         protected override void DoUpdateStatus(object sender, EventArgs e)
-        { Command.Enabled = _solutionService.IsControlledByGit; }
+        { Command.Enabled = _gitService.IsRepositoryOpen; }
     }
 }

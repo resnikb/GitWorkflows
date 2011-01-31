@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel.Composition;
-using GitWorkflows.Package.Dialogs;
-using GitWorkflows.Package.Git.Commands;
+using GitWorkflows.Package.Git;
 using GitWorkflows.Package.ViewModels;
 using GitWorkflows.Package.VisualStudio;
 
@@ -11,7 +10,10 @@ namespace GitWorkflows.Package.PackageCommands
     class CommandNewBranch : MenuCommand
     {
         [Import]
-        private ISolutionService _solutionService;
+        private IGitService _gitService;
+
+        [Import]
+        private IBranchManager _branchManager;
 
         [Import]
         private IDialogService _dialogService;
@@ -22,32 +24,14 @@ namespace GitWorkflows.Package.PackageCommands
 
         protected override void Execute(object sender, EventArgs e)
         {
-            var data = new NewBranchViewModel(_solutionService.WorkingTree.CurrentBranch);
+            var data = new NewBranchViewModel(_branchManager.CurrentBranch.Name);
             if (_dialogService.ShowDialog(data) != true)
                 return;
 
-            if (data.CheckoutAfterCreating)
-            {
-                _solutionService.WorkingTree.Git.Execute(
-                    new Checkout
-                    {
-                        Name = data.NewBranchName,
-                        CreateBranch = true
-                    }
-                );
-            }
-            else
-            {
-                _solutionService.WorkingTree.Git.Execute(
-                    new Branch
-                    {
-                        Name = data.NewBranchName,
-                    }
-                );
-            }
+            _branchManager.Create(data.NewBranchName, data.CheckoutAfterCreating);
         }
 
         protected override void DoUpdateStatus(object sender, EventArgs e)
-        { Command.Enabled = _solutionService.IsControlledByGit; }
+        { Command.Enabled = _gitService.IsRepositoryOpen; }
     }
 }

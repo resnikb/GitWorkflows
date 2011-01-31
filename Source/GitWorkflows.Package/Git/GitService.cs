@@ -2,24 +2,28 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Threading.Tasks;
+using GitWorkflows.Package.Common;
 using GitWorkflows.Package.Extensions;
-using GitWorkflows.Package.Git;
+using GitWorkflows.Package.FileSystem;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NLog;
 
-namespace GitWorkflows.Package.VisualStudio
+namespace GitWorkflows.Package.Git
 {
-    [Export(typeof(ISolutionService))]
-    class SolutionService : ISolutionService, IVsFileChangeEvents, IVsSolutionEvents, IVsSolutionLoadEvents, IDisposable
+    [Export(typeof(IGitService))]
+    [Export(typeof(IBranchManager))]
+    class GitService : IGitService, IVsFileChangeEvents, IVsSolutionEvents, IVsSolutionLoadEvents, IDisposable
     {
-        private static readonly Logger Log = LogManager.GetLogger(typeof(SolutionService).FullName);
+        private static readonly Logger Log = LogManager.GetLogger(typeof(GitService).FullName);
 
         private readonly IServiceProvider _serviceLocator;
         private readonly IVsSolution _vsSolution;
         private readonly uint _cookieSolutionEvents;
         private uint _cookieDirChange;
         private bool _disposed;
+        private GitApplication _git;
 
         public event EventHandler SolutionChanged;
         public event EventHandler WorkingTreeChanged;
@@ -28,13 +32,13 @@ namespace GitWorkflows.Package.VisualStudio
         public bool IsRefreshEnabled
         { get; private set; }
 
-        public bool IsControlledByGit
-        {
-            get { return WorkingTree != null; }
-        }
+        private readonly Cache<Status> _status;
 
-        public WorkingTree WorkingTree
+        public bool IsRepositoryOpen
         { get; private set; }
+
+        public FileStatus GetStatusOf(string path)
+        { return _status.Value.GetStatusOf(path); }
 
         public IEnumerable<IVsSccProject2> ControllableProjects
         {
@@ -56,7 +60,7 @@ namespace GitWorkflows.Package.VisualStudio
             }
         }
 
-        public void Reload()
+        private void Reload()
         {
             string directory, fileName, userFile;
             ErrorHandler.ThrowOnFailure(_vsSolution.GetSolutionInfo(out directory, out fileName, out userFile));
@@ -65,13 +69,13 @@ namespace GitWorkflows.Package.VisualStudio
             ErrorHandler.ThrowOnFailure(_vsSolution.OpenSolutionFile((uint)__VSSLNOPENOPTIONS.SLNOPENOPT_Silent, fileName));
         }
 
-        public void SaveAllDocuments()
+        private void SaveAllDocuments()
         {
             var docService = _serviceLocator.GetService<SVsRunningDocumentTable, IVsRunningDocumentTable>();
             docService.SaveDocuments((uint)__VSRDTSAVEOPTIONS.RDTSAVEOPT_SaveIfDirty, null, 0, 0);
         }
 
-        public void RefreshSourceControlGlyphs(IEnumerable<VSITEMSELECTION> nodes = null)
+        private void RefreshSourceControlGlyphs(IEnumerable<VSITEMSELECTION> nodes = null)
         {
             if (!IsRefreshEnabled)
                 return;
@@ -129,10 +133,37 @@ namespace GitWorkflows.Package.VisualStudio
         }
 
         [ImportingConstructor]
-        public SolutionService(IServiceProvider serviceLocator)
+        public GitService(IServiceProvider serviceLocator)
         {
             IsRefreshEnabled = true;
 
+            _currentBranch = new Cache<Branch>(
+                () => new Branch(_git.Execute(new Commands.SymbolicRef {Name="HEAD"}))
+            );
+            
+            _branches = new Cache<Branch[]>(
+                () => _git.Execute(new Commands.GetBranches()).Select(name => new Branch(name)).ToArray()
+            );
+
+            _status = new Cache<Status>(
+                () =>
+                {
+                    var clean = new Commands.Clean
+                    {
+                        Target = Commands.Clean.CleanTarget.Ignored,
+                        IncludeDirectories = false
+                    };
+
+                    var taskStatus = Task.Factory.StartNew(() => _git.Execute(new Commands.Status()));
+                    var taskClean = Task.Factory.StartNew(() => _git.Execute(clean));
+
+                    return new Status(
+                        taskStatus.Result.Concat(taskClean.Result.Select(name => new KeyValuePair<FileStatus, string>(FileStatus.Ignored, name))),
+                        _git.WorkingDirectory
+                    );
+                }
+            );    
+        
             _serviceLocator = serviceLocator;
             _vsSolution = _serviceLocator.GetService<SVsSolution, IVsSolution>();
             _vsSolution.AdviseSolutionEvents(this, out _cookieSolutionEvents);
@@ -153,7 +184,7 @@ namespace GitWorkflows.Package.VisualStudio
             if (!IsRefreshEnabled)
                 return VSConstants.S_OK;
 
-            if (!WorkingTree.RepositoryPath.IsParentOf(pszDirectory))
+            if (!new Path(_git.WorkingDirectory).IsParentOf(pszDirectory))
                 RaiseWorkingTreeChanged();
             else
                 RaiseRepositoryChanged();
@@ -198,15 +229,19 @@ namespace GitWorkflows.Package.VisualStudio
             Log.Debug("Loading solution from directory: {0}", directory);
 
             var repositoryRoot = WorkingTree.FindTopLevelDirectory(directory);
-            if (repositoryRoot == null)
+            if ( ReferenceEquals(repositoryRoot, null) )
+            {
                 Log.Info("Directory is not in a Git working tree");
+                _git = new GitApplication(directory);
+            }
             else
             {
-                WorkingTree = new WorkingTree(repositoryRoot);
-                Log.Debug("Found Git repository at {0}", WorkingTree.Root);
+                IsRepositoryOpen = true;
+                _git = new GitApplication(repositoryRoot);
+                Log.Debug("Found Git repository at {0}", repositoryRoot);
 
                 var fileChangeService = _serviceLocator.GetService<SVsFileChangeEx, IVsFileChangeEx>();
-                fileChangeService.AdviseDirChange(WorkingTree.Root, 1, this, out _cookieDirChange);
+                fileChangeService.AdviseDirChange(repositoryRoot, 1, this, out _cookieDirChange);
             }
 
             RaiseSolutionChanged(EventArgs.Empty);
@@ -215,11 +250,12 @@ namespace GitWorkflows.Package.VisualStudio
 
         private void DisposeWorkingTree()
         {
-            var fileChangeService = _serviceLocator.GetService<SVsFileChangeEx, IVsFileChangeEx>();
-            if (WorkingTree != null)
+            IsRepositoryOpen = false;
+            if (_cookieDirChange != VSConstants.VSCOOKIE_NIL)
             {
+                var fileChangeService = _serviceLocator.GetService<SVsFileChangeEx, IVsFileChangeEx>();
                 fileChangeService.UnadviseDirChange(_cookieDirChange);
-                WorkingTree = null;
+                _cookieDirChange = VSConstants.VSCOOKIE_NIL;
             }
         }
 
@@ -293,7 +329,7 @@ namespace GitWorkflows.Package.VisualStudio
 
         #endregion
 
-        ~SolutionService()
+        ~GitService()
         { DisposeObject(false); }
 
         public void Dispose()
@@ -340,7 +376,7 @@ namespace GitWorkflows.Package.VisualStudio
 
         public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
         {
-            if (IsControlledByGit)
+            if (IsRepositoryOpen)
                 RefreshSourceControlGlyphs();
 
             return VSConstants.S_OK;
@@ -357,6 +393,49 @@ namespace GitWorkflows.Package.VisualStudio
             DisposeWorkingTree();
             RaiseSolutionChanged(EventArgs.Empty);
             return VSConstants.S_OK;
+        }
+
+        #endregion
+
+        #region Implementation of IBranchManager
+
+        private readonly Cache<Branch> _currentBranch;
+        private readonly Cache<Branch[]> _branches;
+
+        public Branch CurrentBranch
+        {
+            get { return _currentBranch.Value; }
+        }
+
+        public IEnumerable<Branch> Branches
+        {
+            get { return _branches.Value; }
+        }
+
+        public Branch Checkout(string name, bool force)
+        {
+            var command = new Commands.Checkout {Name = name, Force = force};
+            _currentBranch.Invalidate();
+            _git.Execute(command);
+            Reload();
+            return CurrentBranch;
+        }
+
+        public Branch Create(string name, bool checkout)
+        {
+            _branches.Invalidate();
+            if (checkout)
+            {
+                var checkoutCommand = new Commands.Checkout { CreateBranch = true, Name = name };
+                _currentBranch.Invalidate();
+                _git.Execute(checkoutCommand);
+                Reload();
+                return CurrentBranch;
+            }
+
+            var branchCommand = new Commands.Branch {Name = name};
+            _git.Execute(branchCommand);
+            return new Branch(name);
         }
 
         #endregion

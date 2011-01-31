@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Runtime.InteropServices;
-using GitWorkflows.Package.Common;
+using GitWorkflows.Package.Git;
 using GitWorkflows.Package.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 
@@ -10,18 +10,15 @@ namespace GitWorkflows.Package.PackageCommands
     [Export(typeof(MenuCommand))]
     class CommandBranchComboBox : MenuCommand
     {
-        private readonly ISolutionService _solutionService;
-        private readonly Cache<string> _branchName;
+        [Import]
+        private IGitService _gitService;
 
-        [ImportingConstructor]
-        public CommandBranchComboBox(ISolutionService solutionService) 
+        [Import]
+        private IBranchManager _branchManager;
+
+        public CommandBranchComboBox() 
             : base(Constants.guidPackageCmdSet, Constants.idBranchCombo)
-        {
-            _solutionService = solutionService;
-            _branchName = new Cache<string>(() => solutionService.IsControlledByGit ? solutionService.WorkingTree.CurrentBranch : null);
-            solutionService.SolutionChanged += (sender, e) => _branchName.Invalidate();
-            solutionService.RepositoryChanged += (sender, e) => _branchName.Invalidate();
-        }
+        {}
 
         protected override void SetupCommand(OleMenuCommand command)
         {
@@ -52,22 +49,18 @@ namespace GitWorkflows.Package.PackageCommands
             if (vOut != IntPtr.Zero)
             {
                 // when vOut is non-NULL, the IDE is requesting the current value for the combo
-                Marshal.GetNativeVariantForObject(_branchName.Value, vOut);
+                Marshal.GetNativeVariantForObject(_branchManager.CurrentBranch.Name, vOut);
             }
             else if (input != null)
             {
                 // new branch name was selected or typed in
                 var newBranch = input.ToString();
-                if (newBranch != _branchName.Value)
-                {
-                    _solutionService.SaveAllDocuments();
-                    _solutionService.WorkingTree.CurrentBranch = newBranch;
-                    _solutionService.Reload();
-                }
+                if (newBranch != _branchManager.CurrentBranch.Name)
+                    _branchManager.Checkout(newBranch);
             }
         }
 
         protected override void DoUpdateStatus(object sender, EventArgs e)
-        { Command.Enabled = _solutionService.IsControlledByGit; }
+        { Command.Enabled = _gitService.IsRepositoryOpen; }
     }
 }

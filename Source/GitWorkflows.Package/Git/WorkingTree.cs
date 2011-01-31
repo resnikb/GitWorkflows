@@ -29,7 +29,7 @@ namespace GitWorkflows.Package.Git
             get { return Git.Execute(new GetBranches()); }
         }
 
-        public static string FindTopLevelDirectory(string directory)
+        public static Path FindTopLevelDirectory(string directory)
         {
             try
             {
