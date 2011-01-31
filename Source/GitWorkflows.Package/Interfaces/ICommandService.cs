@@ -11,5 +11,6 @@ namespace GitWorkflows.Package.Interfaces
         
         bool ExecuteLater(MenuCommand command, object args);    
         bool ExecuteLater(CommandID command, object args);    
+        bool Execute<TCommand>(object args) where TCommand:MenuCommand;
     }
 }

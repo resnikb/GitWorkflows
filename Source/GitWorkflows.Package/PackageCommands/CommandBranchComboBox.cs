@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Runtime.InteropServices;
+using GitWorkflows.Package.Common;
 using GitWorkflows.Package.Interfaces;
 using GitWorkflows.Package.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -13,6 +14,9 @@ namespace GitWorkflows.Package.PackageCommands
     {
         [Import]
         private IBranchManager _branchManager;
+
+        [Import]
+        private ICommandService _commandService;
 
         public CommandBranchComboBox() 
             : base(Constants.guidPackageCmdSet, Constants.idBranchCombo)
@@ -34,15 +38,10 @@ namespace GitWorkflows.Package.PackageCommands
         //     makes a choice in the combo box.
         //
         //     The second command is used to retrieve this list of choices for the combo box.
-        protected override void Execute(object sender, EventArgs e)
+        protected override void Execute(object sender, OleMenuCmdEventArgs e)
         {
-            if (e == null || e == EventArgs.Empty)
-                return;
-
-            var eventArgs = (OleMenuCmdEventArgs)e;
-
-            var input = eventArgs.InValue;
-            var vOut = eventArgs.OutValue;
+            var input = e.InValue;
+            var vOut = e.OutValue;
 
             if (vOut != IntPtr.Zero)
             {
@@ -54,7 +53,12 @@ namespace GitWorkflows.Package.PackageCommands
                 // new branch name was selected or typed in
                 var newBranch = input.ToString();
                 if (newBranch != _branchManager.CurrentBranch.Name)
-                    _branchManager.Checkout(newBranch);
+                {
+                    if (_branchManager.Branches.FirstOrDefault(b => b.Name == newBranch) != null) 
+                        _branchManager.Checkout(newBranch);
+                    else
+                        _commandService.Execute<CommandNewBranch>(new EventArgs<string>(newBranch));
+                }
             }
         }
 

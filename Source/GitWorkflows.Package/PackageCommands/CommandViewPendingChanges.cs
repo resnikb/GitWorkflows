@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.Composition;
 using GitWorkflows.Package.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
 namespace GitWorkflows.Package.PackageCommands
@@ -12,7 +13,7 @@ namespace GitWorkflows.Package.PackageCommands
             : base(Constants.guidPackageCmdSet, Constants.cmdidPendingChanges)
         {}
 
-        protected override void Execute(object sender, EventArgs e)
+        protected override void Execute(object sender, OleMenuCmdEventArgs e)
         {
             // Get the instance number 0 of this tool window. This window is single instance so this instance
             // is actually the only one.

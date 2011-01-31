@@ -1,9 +1,11 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Linq;
+using GitWorkflows.Package.Common;
 using GitWorkflows.Package.Interfaces;
 using GitWorkflows.Package.ViewModels;
 using GitWorkflows.Package.VisualStudio;
+using Microsoft.VisualStudio.Shell;
 
 namespace GitWorkflows.Package.PackageCommands
 {
@@ -20,9 +22,14 @@ namespace GitWorkflows.Package.PackageCommands
             : base(Constants.guidPackageCmdSet, Constants.cmdidNewBranch)
         {}
 
-        protected override void Execute(object sender, EventArgs e)
+        protected override void Execute(object sender, OleMenuCmdEventArgs e)
         {
             var data = new NewBranchViewModel(_branchManager.CurrentBranch.Name);
+
+            var args = e.InValue as EventArgs<string>;
+            if (args != null)
+                data.NewBranchName = args.Value;
+
             if (_dialogService.ShowDialog(data) != true)
                 return;
 

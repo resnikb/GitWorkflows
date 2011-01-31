@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
+using System.Linq;
 using GitWorkflows.Package.Interfaces;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
@@ -31,9 +32,17 @@ namespace GitWorkflows.Package.Implementations
             var guid = command.Guid;
             var a = args;
 
-            return ErrorHandler.Succeeded( 
+            ErrorHandler.ThrowOnFailure( 
                 shell.PostExecCommand(ref guid, (uint)command.ID, (uint)OLECMDEXECOPT.OLECMDEXECOPT_DODEFAULT, ref a)
             );
+            return true;
+        }
+
+        public bool Execute<TCommand>(object args) where TCommand : MenuCommand
+        {
+            var command = Commands.OfType<TCommand>().Single();
+            command.Command.Invoke(args);
+            return true;
         }
     }
 }

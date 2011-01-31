@@ -28,7 +28,7 @@ namespace GitWorkflows.Package.VisualStudio
         protected virtual void SetupCommand(OleMenuCommand command)
         {}
 
-        protected OleMenuCommand Command
+        public OleMenuCommand Command
         { get; private set; }
 
         protected bool IsSourceControlProviderActive
@@ -57,16 +57,6 @@ namespace GitWorkflows.Package.VisualStudio
             }
         }
 
-        public void Execute()
-        {
-            if (Command != null)
-            {
-                DoUpdateStatus(this, EventArgs.Empty);
-                if (Command.Enabled && Command.Visible)
-                    Execute(this, EventArgs.Empty);
-            }
-        }
-
         protected virtual void OnSourceControlProviderDeactivated()
         {
             Command.Enabled = false;
@@ -92,7 +82,7 @@ namespace GitWorkflows.Package.VisualStudio
         protected virtual void OnStatusChanged(object sender, EventArgs e)
         {}
 
-        protected abstract void Execute(object sender, EventArgs e);
+        protected abstract void Execute(object sender, OleMenuCmdEventArgs e);
 
         #region Implementation of IPartImportsSatisfiedNotification
 
@@ -105,7 +95,12 @@ namespace GitWorkflows.Package.VisualStudio
             if (service == null)
                 return;
 
-            Command = new OleMenuCommand(Execute, OnStatusChanged, UpdateStatus, CommandID);
+            Command = new OleMenuCommand(
+                (sender, e) => Execute(sender, e as OleMenuCmdEventArgs), 
+                OnStatusChanged, 
+                UpdateStatus, 
+                CommandID
+            );
             SetupCommand(Command);
             service.AddCommand(Command);
  

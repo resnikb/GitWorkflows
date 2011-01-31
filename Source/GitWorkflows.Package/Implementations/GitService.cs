@@ -50,11 +50,11 @@ namespace GitWorkflows.Package.Implementations
                         IncludeDirectories = false
                     };
 
-                    var taskStatus = Task.Factory.StartNew(() => Git.Execute(new Git.Commands.Status()));
-                    var taskClean = Task.Factory.StartNew(() => Git.Execute(clean));
+                    var statusResult = Git.Execute(new Git.Commands.Status());
+                    var cleanResult = Git.Execute(clean);
 
                     return new Status(
-                        taskStatus.Result.Concat(taskClean.Result.Select(name => new KeyValuePair<FileStatus, string>(FileStatus.Ignored, name))),
+                        statusResult.Concat(cleanResult.Select(name => new KeyValuePair<FileStatus, string>(FileStatus.Ignored, name))),
                         Git.WorkingDirectory
                     );
                 }

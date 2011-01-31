@@ -19,13 +19,9 @@ namespace GitWorkflows.Package.PackageCommands
             : base(Constants.guidPackageCmdSet, Constants.idBranchComboGetBranches)
         {}
 
-        protected override void Execute(object sender, EventArgs e)
+        protected override void Execute(object sender, OleMenuCmdEventArgs e)
         {
-            if (e == null || e == EventArgs.Empty)
-                return;
-
-            var eventArgs = (OleMenuCmdEventArgs)e;
-            Marshal.GetNativeVariantForObject(_branchManager.Branches.Select(b => b.Name).ToArray(), eventArgs.OutValue);
+            Marshal.GetNativeVariantForObject(_branchManager.Branches.Select(b => b.Name).ToArray(), e.OutValue);
         }
 
         protected override void DoUpdateStatus(object sender, EventArgs e)
