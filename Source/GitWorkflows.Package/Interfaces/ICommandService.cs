@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using MenuCommand = GitWorkflows.Package.VisualStudio.MenuCommand;
 
-namespace GitWorkflows.Package.VisualStudio
+namespace GitWorkflows.Package.Interfaces
 {
     interface ICommandService
     {

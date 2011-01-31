@@ -1,15 +1,11 @@
 ﻿using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
-using System.ComponentModel.Composition.Primitives;
-using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
-using GitWorkflows.Package.Extensions;
-using GitWorkflows.Package.VisualStudio;
+using GitWorkflows.Package.Interfaces;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
 using NLog;

@@ -1,9 +1,10 @@
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using GitWorkflows.Package.Interfaces;
 using GitWorkflows.Package.ViewModels;
 using Microsoft.VisualStudio.PlatformUI;
 
-namespace GitWorkflows.Package.VisualStudio
+namespace GitWorkflows.Package.Implementations
 {
     [Export(typeof(IDialogService))]
     class DialogService : IDialogService

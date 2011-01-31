@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using GitWorkflows.Package.Git;
 
-namespace GitWorkflows.Package.Git
+namespace GitWorkflows.Package.Interfaces
 {
     interface IBranchManager
     {

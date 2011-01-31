@@ -126,7 +126,10 @@
     </Compile>
     <Compile Include="Git\Branch.cs" />
     <Compile Include="Git\Commands\Branch.cs" />
-    <Compile Include="Git\IBranchManager.cs" />
+    <Compile Include="Implementations\BranchManager.cs" />
+    <Compile Include="Implementations\SolutionService.cs" />
+    <Compile Include="Interfaces\IBranchManager.cs" />
+    <Compile Include="Interfaces\ISolutionService.cs" />
     <Compile Include="ViewModels\NewBranchViewModel.cs" />
     <Compile Include="Logging\VsOutputPaneTarget.cs" />
     <Compile Include="PackageCommands\CommandBranchComboBox.cs" />
@@ -173,13 +176,13 @@
     <Compile Include="Subprocess\ApplicationDefinition.cs" />
     <Compile Include="Subprocess\Runner.cs" />
     <Compile Include="ViewModels\ViewModel.cs" />
-    <Compile Include="VisualStudio\CommandService.cs" />
-    <Compile Include="VisualStudio\DialogService.cs" />
-    <Compile Include="VisualStudio\ICommandService.cs" />
-    <Compile Include="VisualStudio\IDialogService.cs" />
-    <Compile Include="Git\IGitService.cs" />
+    <Compile Include="Implementations\CommandService.cs" />
+    <Compile Include="Implementations\DialogService.cs" />
+    <Compile Include="Interfaces\ICommandService.cs" />
+    <Compile Include="Interfaces\IDialogService.cs" />
+    <Compile Include="Interfaces\IGitService.cs" />
     <Compile Include="VisualStudio\MenuCommand.cs" />
-    <Compile Include="Git\GitService.cs" />
+    <Compile Include="Implementations\GitService.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">

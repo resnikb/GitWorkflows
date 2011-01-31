@@ -1,6 +1,6 @@
 using GitWorkflows.Package.ViewModels;
 
-namespace GitWorkflows.Package.VisualStudio
+namespace GitWorkflows.Package.Interfaces
 {
     interface IDialogService
     {

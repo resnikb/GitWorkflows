@@ -3,10 +3,9 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using GitWorkflows.Package.Common;
 using GitWorkflows.Package.Extensions;
 using GitWorkflows.Package.Git;
-using GitWorkflows.Package.VisualStudio;
+using GitWorkflows.Package.Interfaces;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NLog;
@@ -15,14 +14,13 @@ namespace GitWorkflows.Package
 {
     [Guid(Constants.guidSccProviderServiceString)]
     [Export]
-    public class SourceControlProvider : IVsSccProvider, IVsSccManager2, IDisposable
+    public class SourceControlProvider : IVsSccProvider, IVsSccManager2
     {
         private static readonly Logger Log = LogManager.GetLogger(typeof(SourceControlProvider).FullName);
 
         [Import]
         private IGitService _gitService;
 
-        private bool _disposed;
         private bool _active;
 
         public event EventHandler Activated;
@@ -37,28 +35,6 @@ namespace GitWorkflows.Package
             rscp.RegisterSourceControlProvider(Constants.guidSccProvider);
 
             serviceContainer.AddService(GetType(), this, true);
-        }
-
-        ~SourceControlProvider()
-        { DisposeObject(false); }
-
-        public void Dispose()
-        {
-            DisposeObject(true);
-            GC.SuppressFinalize(this);
-        }
-
-        private void DisposeObject(bool disposing)
-        {
-            if (_disposed)
-                return;
-
-            if (disposing)
-            {
-            }
-
-            // Dispose unmanaged resources.
-            _disposed = true;
         }
 
         // Called by the scc manager when the provider is activated. 

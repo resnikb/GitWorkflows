@@ -1,13 +1,15 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
+using GitWorkflows.Package.Interfaces;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell.Interop;
 using GitWorkflows.Package.Extensions;
 using IServiceProvider = System.IServiceProvider;
+using MenuCommand = GitWorkflows.Package.VisualStudio.MenuCommand;
 
-namespace GitWorkflows.Package.VisualStudio
+namespace GitWorkflows.Package.Implementations
 {
     [Export(typeof(ICommandService))]
     class CommandService : ICommandService
