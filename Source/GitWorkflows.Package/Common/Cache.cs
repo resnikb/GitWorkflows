@@ -2,11 +2,11 @@ using System;
 
 namespace GitWorkflows.Package.Common
 {
-    public class Cache<T>
+    sealed class Cache<T>
     {
         private readonly Func<T> _hydrate;
         private readonly TimeSpan? _validityTime;
-        private DateTime _expirationTime = DateTime.Now;
+        private DateTime _expirationTime;
         private T _cachedValue;
 
         public T Value
@@ -27,6 +27,7 @@ namespace GitWorkflows.Package.Common
         {
             _hydrate = hydrate;
             _validityTime = validityTime;
+            _expirationTime = DateTime.MinValue;
         }
 
         public void Invalidate()
