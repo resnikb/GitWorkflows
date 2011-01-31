@@ -98,9 +98,10 @@ namespace GitWorkflows.Package
         {
             if (disposing)
             {
-                _partContainer.Dispose();
-                _partCatalog.Dispose();
-            }
+                using (_partCatalog)
+                using (_partContainer)
+                { }
+           }
 
             base.Dispose(disposing);
         }
