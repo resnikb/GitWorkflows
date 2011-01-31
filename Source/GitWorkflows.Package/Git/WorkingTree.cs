@@ -9,7 +9,8 @@ namespace GitWorkflows.Package.Git
 {
     public class WorkingTree
     {
-        private readonly GitApplication _git;
+        public GitApplication Git
+        { get; private set; }
 
         public Path Root
         { get; private set; }
@@ -19,13 +20,13 @@ namespace GitWorkflows.Package.Git
 
         public string CurrentBranch
         {
-            get { return _git.Execute(new SymbolicRef {Name="HEAD"}); }
-            set { _git.Execute(new Checkout {Name=value}); }
+            get { return Git.Execute(new SymbolicRef {Name="HEAD"}); }
+            set { Git.Execute(new Checkout {Name=value}); }
         }
 
         public IEnumerable<string> Branches
         {
-            get { return _git.Execute(new GetBranches()); }
+            get { return Git.Execute(new GetBranches()); }
         }
 
         public static string FindTopLevelDirectory(string directory)
@@ -44,7 +45,7 @@ namespace GitWorkflows.Package.Git
         public WorkingTree(string toplevelDirectory)
         {
             Debug.Assert(toplevelDirectory == new Path(FindTopLevelDirectory(toplevelDirectory)));
-            _git = new GitApplication(toplevelDirectory);
+            Git = new GitApplication(toplevelDirectory);
             Root = toplevelDirectory;
             RepositoryPath = Root.Combine(".git");
         }
@@ -57,12 +58,12 @@ namespace GitWorkflows.Package.Git
                 IncludeDirectories = false
             };
 
-            var taskStatus = Task.Factory.StartNew(() => _git.Execute(new Commands.Status()));
-            var taskClean = Task.Factory.StartNew(() => _git.Execute(clean));
+            var taskStatus = Task.Factory.StartNew(() => Git.Execute(new Commands.Status()));
+            var taskClean = Task.Factory.StartNew(() => Git.Execute(clean));
 
             return new Status(
                 taskStatus.Result.Concat(taskClean.Result.Select(name => new KeyValuePair<FileStatus, string>(FileStatus.Ignored, name))),
-                _git.WorkingDirectory
+                Git.WorkingDirectory
             );
         }
 
@@ -72,7 +73,7 @@ namespace GitWorkflows.Package.Git
             {
                 Targets = Enumerable.Repeat(path, 1)
             };
-            var result = _git.Execute(status).SingleOrDefault();
+            var result = Git.Execute(status).SingleOrDefault();
             return result.Value != null ? result.Key : FileStatus.NotModified;
         }
     }

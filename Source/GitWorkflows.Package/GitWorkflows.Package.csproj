@@ -120,10 +120,12 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AttachedProperties\ButtonService.cs" />
     <Compile Include="Dialogs\NewBranchDialog.xaml.cs">
       <DependentUpon>NewBranchDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Dialogs\NewBranchViewModel.cs" />
+    <Compile Include="Git\Commands\Branch.cs" />
+    <Compile Include="ViewModels\NewBranchViewModel.cs" />
     <Compile Include="Logging\VsOutputPaneTarget.cs" />
     <Compile Include="PackageCommands\CommandBranchComboBox.cs" />
     <Compile Include="PackageCommands\CommandGetBranches.cs" />
@@ -168,6 +170,7 @@
     <Compile Include="SourceControlProvider.cs" />
     <Compile Include="Subprocess\ApplicationDefinition.cs" />
     <Compile Include="Subprocess\Runner.cs" />
+    <Compile Include="ViewModels\ViewModel.cs" />
     <Compile Include="VisualStudio\CommandService.cs" />
     <Compile Include="VisualStudio\DialogService.cs" />
     <Compile Include="VisualStudio\ICommandService.cs" />

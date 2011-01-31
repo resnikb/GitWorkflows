@@ -1,6 +1,6 @@
-namespace GitWorkflows.Package.Dialogs
+namespace GitWorkflows.Package.ViewModels
 {
-    class NewBranchViewModel
+    class NewBranchViewModel : ViewModel
     {
         public string SourceName
         { get; private set; }
@@ -12,6 +12,9 @@ namespace GitWorkflows.Package.Dialogs
         { get; set; }
 
         public NewBranchViewModel(string sourceName)
-        { SourceName = sourceName; }
+        {
+            SourceName = sourceName;
+            CheckoutAfterCreating = true;
+        }
     }
 }

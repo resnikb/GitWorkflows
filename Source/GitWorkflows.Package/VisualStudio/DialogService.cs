@@ -1,5 +1,6 @@
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using GitWorkflows.Package.ViewModels;
 using Microsoft.VisualStudio.PlatformUI;
 
 namespace GitWorkflows.Package.VisualStudio
@@ -10,7 +11,7 @@ namespace GitWorkflows.Package.VisualStudio
         [Import]
         private ExportProvider _exportProvider;
 
-        public bool? ShowDialog<TViewModel>(TViewModel viewModel)
+        public bool? ShowDialog<TViewModel>(TViewModel viewModel) where TViewModel : ViewModel
         {
             var window = _exportProvider.GetExportedValue<DialogWindow>(typeof(TViewModel).Name);
             window.DataContext = viewModel;

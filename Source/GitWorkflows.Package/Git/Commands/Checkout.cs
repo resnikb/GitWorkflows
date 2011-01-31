@@ -21,6 +21,9 @@ namespace GitWorkflows.Package.Git.Commands
         public bool Force
         { get; set; }
 
+        public bool CreateBranch
+        { get; set; }
+
         public override void Setup(Runner runner)
         {
             if (string.IsNullOrWhiteSpace(Name))
@@ -30,6 +33,9 @@ namespace GitWorkflows.Package.Git.Commands
 
             if (Force)
                 runner.Arguments("-f");
+
+            if (CreateBranch)
+                runner.Arguments("-b");
 
             runner.Arguments(Name);
         }
