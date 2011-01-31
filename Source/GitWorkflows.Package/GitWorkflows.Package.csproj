@@ -120,9 +120,14 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Dialogs\NewBranchDialog.xaml.cs">
+      <DependentUpon>NewBranchDialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogs\NewBranchViewModel.cs" />
     <Compile Include="Logging\VsOutputPaneTarget.cs" />
     <Compile Include="PackageCommands\CommandBranchComboBox.cs" />
     <Compile Include="PackageCommands\CommandGetBranches.cs" />
+    <Compile Include="PackageCommands\CommandNewBranch.cs" />
     <Compile Include="PackageCommands\CommandViewPendingChanges.cs" />
     <Compile Include="Common\Cache.cs" />
     <Compile Include="Common\ServiceNotFoundException.cs" />
@@ -164,7 +169,9 @@
     <Compile Include="Subprocess\ApplicationDefinition.cs" />
     <Compile Include="Subprocess\Runner.cs" />
     <Compile Include="VisualStudio\CommandService.cs" />
+    <Compile Include="VisualStudio\DialogService.cs" />
     <Compile Include="VisualStudio\ICommandService.cs" />
+    <Compile Include="VisualStudio\IDialogService.cs" />
     <Compile Include="VisualStudio\ISolutionService.cs" />
     <Compile Include="VisualStudio\MenuCommand.cs" />
     <Compile Include="VisualStudio\SolutionService.cs" />
@@ -203,9 +210,18 @@
     <None Include="Resources\Images_24bit.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\NewBranch.png" />
     <Content Include="Resources\Package.ico" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="CommonResources.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Dialogs\NewBranchDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="PendingChangesControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.ComponentModel.Composition.Primitives;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -87,9 +88,14 @@ namespace GitWorkflows.Package
 
             _partCatalog = new AssemblyCatalog(Assembly.GetExecutingAssembly());
             _partContainer = new CompositionContainer(_partCatalog);
-            _partContainer.ComposeExportedValue<IServiceProvider>(this);
-            _partContainer.ComposeExportedValue<IServiceContainer>(this);
-            _partContainer.ComposeExportedValue<Microsoft.VisualStudio.Shell.Package>(this);
+            
+            var compositionBatch = new CompositionBatch();
+            compositionBatch.AddExportedValue<IServiceProvider>(this);
+            compositionBatch.AddExportedValue<IServiceContainer>(this);
+            compositionBatch.AddExportedValue<Microsoft.VisualStudio.Shell.Package>(this);
+            compositionBatch.AddExportedValue<ExportProvider>(_partContainer);
+
+            _partContainer.Compose(compositionBatch);
 
 //            LogManager.OutputWindowService = _partContainer.GetExportedValue<IOutputWindowService>();
 

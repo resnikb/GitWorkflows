@@ -27,5 +27,6 @@ namespace GitWorkflows.Package
         public const int cmdidPendingChanges =    0x101;
         public const int idBranchCombo = 0x401;
         public const int idBranchComboGetBranches =    0x402;
+        public const int cmdidNewBranch =    0x403;
     };
 }

@@ -100,6 +100,16 @@
         </Strings>
       </Button>
 
+      <Button guid="guidPackageCmdSet" id="cmdidNewBranch" priority="0x0100" type="Button">
+        <Parent guid="guidPackageCmdSet" id="igrpToolbar"/>
+        <Icon guid="guidBmpNewBranch" id="icon"/>
+        <CommandFlag>DefaultDisabled</CommandFlag>
+        
+        <Strings>
+          <CommandName>NewBranch</CommandName>
+          <ButtonText>New Branch</ButtonText>
+        </Strings>
+      </Button>
 
     </Buttons>
    
@@ -111,6 +121,7 @@
             inside a button definition. An important aspect of this declaration is that the element id 
             must be the actual index (1-based) of the bitmap inside the bitmap strip. -->
       <Bitmap guid="guidImages" href="Resources\Images_32bit.bmp" usedList="bmpPic1, bmpPic2, bmpPicSearch, bmpPicX, bmpPicArrows"/>
+      <Bitmap guid="guidBmpNewBranch" href="Resources\NewBranch.png" usedList="icon"/>
 
     </Bitmaps>
 
@@ -208,9 +219,8 @@
       <IDSymbol name="igrpToolbar" value="0x410"/>
       <IDSymbol name="idBranchCombo" value="0x401"/>
       <IDSymbol name="idBranchComboGetBranches" value="0x402"/>
+      <IDSymbol name="cmdidNewBranch" value="0x403"/>
     </GuidSymbol>
-    
-    
     
     <GuidSymbol name="guidImages" value="{22741094-f46a-4934-a37c-5f782800bd84}" >
       <IDSymbol name="bmpPic1" value="1" />
@@ -218,6 +228,10 @@
       <IDSymbol name="bmpPicSearch" value="3" />
       <IDSymbol name="bmpPicX" value="4" />
       <IDSymbol name="bmpPicArrows" value="5" />
+    </GuidSymbol>
+    
+    <GuidSymbol name="guidBmpNewBranch" value="{1B363ED3-0880-4D35-BD47-66C7183F8529}" >
+      <IDSymbol name="icon" value="1" />
     </GuidSymbol>
   </Symbols>
 
