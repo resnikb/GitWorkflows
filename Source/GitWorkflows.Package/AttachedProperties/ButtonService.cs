@@ -22,7 +22,9 @@ namespace GitWorkflows.Package.AttachedProperties
         {
             var button = (Button)d;
             button.Click -= OnButtonClick;
-            button.Click += OnButtonClick;
+
+            if (e.NewValue is bool? && ((bool?)e.NewValue).HasValue)
+                button.Click += OnButtonClick;
         }
 
         private static void OnButtonClick(object sender, RoutedEventArgs e)
