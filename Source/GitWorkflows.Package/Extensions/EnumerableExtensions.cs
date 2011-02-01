@@ -116,5 +116,13 @@ namespace GitWorkflows.Package.Extensions
 
         public static string ToCsv<T>(this IEnumerable<T> items)
         { return items.ToDelimitedString(","); }
+
+        public static void Fill<T>(this IList<T> collection, T value)
+        {
+            Arguments.EnsureNotNull(new{collection});
+
+            for (var i = 0; i < collection.Count; ++i)
+                collection[i] = value;
+        }
     }
 }

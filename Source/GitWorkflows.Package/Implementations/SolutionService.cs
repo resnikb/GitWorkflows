@@ -268,9 +268,7 @@ namespace GitWorkflows.Package.Implementations
         #endregion
 
         ~SolutionService()
-        {
-            DisposeObject(false);
-        }
+        { DisposeObject(false); }
 
         public void Dispose()
         {

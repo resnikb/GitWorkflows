@@ -30,10 +30,8 @@ namespace GitWorkflows.Package.Implementations
             var shell = _serviceProvider.GetService<SVsUIShell, IVsUIShell>();
 
             var guid = command.Guid;
-            var a = args;
-
             ErrorHandler.ThrowOnFailure( 
-                shell.PostExecCommand(ref guid, (uint)command.ID, (uint)OLECMDEXECOPT.OLECMDEXECOPT_DODEFAULT, ref a)
+                shell.PostExecCommand(ref guid, (uint)command.ID, (uint)OLECMDEXECOPT.OLECMDEXECOPT_DODEFAULT, ref args)
             );
             return true;
         }

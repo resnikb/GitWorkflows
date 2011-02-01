@@ -87,20 +87,18 @@ namespace GitWorkflows.Package
 
         public int GetSccGlyph(int cFiles, string[] rgpszFullPaths, VsStateIcon[] rgsiGlyphs, uint[] rgdwSccStatus)
         {
-            Debug.Assert(cFiles == 1);
+            if (!_active)
+            {
+                rgsiGlyphs.Fill(VsStateIcon.STATEICON_NOSTATEICON);
+                if (rgdwSccStatus != null)
+                    rgdwSccStatus.Fill((uint)__SccStatus.SCC_STATUS_NOTCONTROLLED);
+
+                return VSConstants.S_OK;
+            }
 
             // TODO: Set the status to something more meaningful
             if (rgdwSccStatus != null)
                 rgdwSccStatus[0] = (uint)(_active ? __SccStatus.SCC_STATUS_CONTROLLED : __SccStatus.SCC_STATUS_NOTCONTROLLED);
-
-            if (rgpszFullPaths == null || rgsiGlyphs == null)
-                return VSConstants.S_OK;
-
-            if (!_active)
-            {
-                rgsiGlyphs[0] = VsStateIcon.STATEICON_BLANK;
-                return VSConstants.S_OK;
-            }
 
             var status = _gitService.GetStatusOf(rgpszFullPaths[0]);
             switch (status)
@@ -137,7 +135,7 @@ namespace GitWorkflows.Package
                     if (rgdwSccStatus != null)
                         rgdwSccStatus[0] = (uint)__SccStatus.SCC_STATUS_NOTCONTROLLED;
 
-                    rgsiGlyphs[0] = VsStateIcon.STATEICON_BLANK;
+                    rgsiGlyphs[0] = VsStateIcon.STATEICON_NOSTATEICON;
                     break;
             }
 
@@ -146,6 +144,7 @@ namespace GitWorkflows.Package
 
         public int GetSccGlyphFromStatus(uint dwSccStatus, VsStateIcon[] psiGlyph)
         {
+            psiGlyph[0] = VsStateIcon.STATEICON_BLANK;
             return VSConstants.S_OK;
         }
 
