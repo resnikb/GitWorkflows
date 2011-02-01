@@ -13,7 +13,7 @@ namespace GitWorkflows.Package.Git.Commands
 
         public override void Setup(Runner runner)
         {
-            runner.Arguments("status", "--porcelain");
+            runner.Arguments("status", "--porcelain", "--untracked-files=all");
 
             if (Targets != null)
                 runner.Arguments(Targets.ToArray());
