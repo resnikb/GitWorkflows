@@ -6,7 +6,8 @@
                  Width="400"
                  Height="160"
                  ResizeMode="NoResize"
-                 FocusManager.FocusedElement="{Binding ElementName=BranchNameBox}">
+                 FocusManager.FocusedElement="{Binding ElementName=BranchNameBox}" 
+                 WindowStartupLocation="CenterOwner">
     <ui:DialogWindow.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
