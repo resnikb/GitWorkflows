@@ -8,6 +8,7 @@ namespace GitWorkflows.Package.Interfaces
         event Action SolutionClosed;
         event Action<Path> SolutionOpening;
 
+        void Initialize();
         void Reload();
         void RefreshSourceControlIcons();
     }

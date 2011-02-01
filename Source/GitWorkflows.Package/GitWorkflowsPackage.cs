@@ -92,6 +92,7 @@ namespace GitWorkflows.Package
 
             // Create all commands
             _partContainer.GetExportedValue<ICommandService>();
+            _partContainer.GetExportedValue<ISolutionService>().Initialize();
         }
 
         protected override void Dispose(bool disposing)

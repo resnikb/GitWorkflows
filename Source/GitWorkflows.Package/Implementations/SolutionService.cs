@@ -35,6 +35,17 @@ namespace GitWorkflows.Package.Implementations
             _vsSolution.AdviseSolutionEvents(this, out _cookieSolutionEvents);
         }
 
+        public void Initialize()
+        {
+            string directory, fileName, userFile;
+            if ( ErrorHandler.Failed(_vsSolution.GetSolutionInfo(out directory, out fileName, out userFile)) || string.IsNullOrEmpty(fileName))
+                return;
+
+            var handler = SolutionOpening;
+            if (handler != null)
+                handler(new Path(fileName));
+        }
+
         public void Reload()
         {
             string directory, fileName, userFile;

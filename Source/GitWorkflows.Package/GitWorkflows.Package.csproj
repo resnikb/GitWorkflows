@@ -131,6 +131,7 @@
     <Compile Include="Implementations\SolutionService.cs" />
     <Compile Include="Interfaces\IBranchManager.cs" />
     <Compile Include="Interfaces\ISolutionService.cs" />
+    <Compile Include="PackageCommands\CommandRefreshSccIcons.cs" />
     <Compile Include="ViewModels\NewBranchViewModel.cs" />
     <Compile Include="Logging\VsOutputPaneTarget.cs" />
     <Compile Include="PackageCommands\CommandBranchComboBox.cs" />
