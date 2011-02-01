@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.Composition;
-using System.Runtime.InteropServices;
 using GitWorkflows.Package.Interfaces;
 using GitWorkflows.Package.Extensions;
 using GitWorkflows.Package.VisualStudio;
@@ -19,6 +18,9 @@ namespace GitWorkflows.Package.PackageCommands
 
         [Import]
         private ISolutionService _solutionService;
+
+        [Import]
+        private IGitService _gitService;
 
         public CommandRefreshSccIcons() 
             : base(Constants.guidPackageCmdSet, Constants.cmdidRefreshSccIcons)
@@ -44,12 +46,7 @@ namespace GitWorkflows.Package.PackageCommands
 
             _sourceControlProvider.Activated += handler;
             _sourceControlProvider.Deactivated += handler;
+            _gitService.ChangeDetected += handler;
         }
-
-        [DllImport("oleaut32", PreserveSig = false)]
-        static extern void VariantInit(IntPtr pObject);
-
-        [DllImport("oleaut32", PreserveSig = false)]
-        static extern void VariantClear(IntPtr pObject);
     }
 }

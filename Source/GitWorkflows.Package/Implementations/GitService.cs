@@ -20,11 +20,15 @@ namespace GitWorkflows.Package.Implementations
     {
         private static readonly Logger Log = LogManager.GetLogger(typeof(GitService).FullName);
 
-        private readonly ISolutionService _solutionService;
-        private readonly IServiceProvider _serviceProvider;
+        [Import]
+        private IServiceProvider _serviceProvider;
+
         private readonly Cache<Status> _status;
         private uint _cookieDirChange;
         private bool _disposed;
+        private DateTime _lastChangeTime = DateTime.MinValue;
+
+        public event EventHandler ChangeDetected;
 
         public GitApplication Git
         { get; private set; }
@@ -38,7 +42,7 @@ namespace GitWorkflows.Package.Implementations
         }
 
         [ImportingConstructor]
-        public GitService(IServiceProvider serviceProvider, ISolutionService solutionService)
+        public GitService(ISolutionService solutionService)
         {
             _status = new Cache<Status>(
                 () =>
@@ -59,10 +63,8 @@ namespace GitWorkflows.Package.Implementations
                 }
             );    
         
-            _serviceProvider = serviceProvider;
-            _solutionService = solutionService;
-            _solutionService.SolutionClosed += DisposeWorkingTree;
-            _solutionService.SolutionOpening += OnSolutionOpening;
+            solutionService.SolutionClosed += DisposeWorkingTree;
+            solutionService.SolutionOpening += OnSolutionOpening;
         }
 
         ~GitService()
@@ -108,6 +110,7 @@ namespace GitWorkflows.Package.Implementations
                 Git = new GitApplication(RepositoryRoot);
                 Log.Debug("Found Git repository at {0}", RepositoryRoot);
 
+                _lastChangeTime = DateTime.MinValue;
                 var fileChangeService = _serviceProvider.GetService<SVsFileChangeEx, IVsFileChangeEx>();
                 fileChangeService.AdviseDirChange(RepositoryRoot, 1, this, out _cookieDirChange);
             }
@@ -128,8 +131,21 @@ namespace GitWorkflows.Package.Implementations
 
         public int DirectoryChanged(string pszDirectory)
         {
-            _solutionService.RefreshSourceControlIcons();
+            var changeInterval = DateTime.Now.Subtract(_lastChangeTime);
+            if (changeInterval.TotalSeconds >= 0.5)
+                OnChangeDetected();
+
+            _lastChangeTime = DateTime.Now;
             return VSConstants.S_OK;
+        }
+
+        private void OnChangeDetected()
+        {
+            _status.Invalidate();
+
+            var handler = ChangeDetected;
+            if (handler != null)
+                handler(this, EventArgs.Empty);
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using GitWorkflows.Package.FileSystem;
 using GitWorkflows.Package.Git;
 
@@ -5,6 +6,8 @@ namespace GitWorkflows.Package.Interfaces
 {
     interface IGitService
     {
+        event EventHandler ChangeDetected;
+
         Path RepositoryRoot
         { get; }
 
