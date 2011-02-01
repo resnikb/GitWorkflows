@@ -1,34 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Linq;
 using GitWorkflows.Package.Common;
-using GitWorkflows.Package.Extensions;
-using GitWorkflows.Package.FileSystem;
 using GitWorkflows.Package.Git;
 using GitWorkflows.Package.Git.Commands;
 using GitWorkflows.Package.Interfaces;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell.Interop;
 using NLog;
+using Path = GitWorkflows.Package.FileSystem.Path;
 using Status = GitWorkflows.Package.Git.Status;
 
 namespace GitWorkflows.Package.Implementations
 {
     [Export(typeof(IGitService))]
-    class GitService : IGitService, IVsFileChangeEvents, IDisposable
+    class GitService : IGitService, IDisposable
     {
         private static readonly Logger Log = LogManager.GetLogger(typeof(GitService).FullName);
 
-        [Import]
-        private IServiceProvider _serviceProvider;
-
         private readonly Cache<Status> _status;
-        private uint _cookieDirChange;
         private bool _disposed;
         private DateTime _lastChangeTime = DateTime.MinValue;
+        private Path _gitRoot;
+        private FileSystemWatcher _watcher;
 
-        public event EventHandler ChangeDetected;
+        public event EventHandler RepositoryChanged;
+        public event EventHandler WorkingTreeChanged;
 
         public GitApplication Git
         { get; private set; }
@@ -110,40 +107,69 @@ namespace GitWorkflows.Package.Implementations
                 Git = new GitApplication(RepositoryRoot);
                 Log.Debug("Found Git repository at {0}", RepositoryRoot);
 
+                _gitRoot = RepositoryRoot.Combine(".git");
+
                 _lastChangeTime = DateTime.MinValue;
-                var fileChangeService = _serviceProvider.GetService<SVsFileChangeEx, IVsFileChangeEx>();
-                fileChangeService.AdviseDirChange(RepositoryRoot, 1, this, out _cookieDirChange);
+                _watcher = new FileSystemWatcher
+                {
+                    Path = RepositoryRoot,
+                    IncludeSubdirectories = true,
+                    NotifyFilter = NotifyFilters.Size | NotifyFilters.FileName | NotifyFilters.LastWrite
+                };
+                _watcher.Created += OnFileChanged;
+                _watcher.Deleted += OnFileChanged;
+                _watcher.Changed += OnFileChanged;
+                _watcher.Renamed += OnFileRenamed;
+                _watcher.EnableRaisingEvents = true;
             }
+        }
+
+        private void OnFileRenamed(object sender, RenamedEventArgs e)
+        { OnFileChanged(sender, e); }
+
+        private void OnFileChanged(object sender, FileSystemEventArgs e)
+        {
+            var changeInterval = DateTime.Now.Subtract(_lastChangeTime);
+            if (changeInterval.TotalSeconds < 0.5)
+                return;
+
+            var path = new Path(e.FullPath);
+
+            // Ignore changes to directories
+            if (path.IsDirectory)
+                return;
+
+            if (_gitRoot.IsParentOf(path))
+                OnRepositoryChanged();
+            else if (!path.GetCanonicalComponents().Any(c => c.StartsWith("_resharper.")))
+                OnWorkingTreeChanged();
+
+            _lastChangeTime = DateTime.Now;
         }
 
         private void DisposeWorkingTree()
         {
-            if (_cookieDirChange != VSConstants.VSCOOKIE_NIL)
+            if (_watcher != null)
             {
-                var fileChangeService = _serviceProvider.GetService<SVsFileChangeEx, IVsFileChangeEx>();
-                fileChangeService.UnadviseDirChange(_cookieDirChange);
-                _cookieDirChange = VSConstants.VSCOOKIE_NIL;
+                _watcher.Dispose();
+                _watcher = null;
             }
         }
 
-        public int FilesChanged(uint cChanges, string[] rgpszFile, uint[] rggrfChange)
-        { return VSConstants.S_OK; }
-
-        public int DirectoryChanged(string pszDirectory)
-        {
-            var changeInterval = DateTime.Now.Subtract(_lastChangeTime);
-            if (changeInterval.TotalSeconds >= 0.5)
-                OnChangeDetected();
-
-            _lastChangeTime = DateTime.Now;
-            return VSConstants.S_OK;
-        }
-
-        private void OnChangeDetected()
+        private void OnRepositoryChanged()
         {
             _status.Invalidate();
 
-            var handler = ChangeDetected;
+            var handler = RepositoryChanged;
+            if (handler != null)
+                handler(this, EventArgs.Empty);
+        }
+
+        private void OnWorkingTreeChanged()
+        {
+            _status.Invalidate();
+
+            var handler = WorkingTreeChanged;
             if (handler != null)
                 handler(this, EventArgs.Empty);
         }

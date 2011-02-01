@@ -90,7 +90,7 @@ namespace GitWorkflows.Package.Implementations
             _solutionService.SolutionClosed += InvalidateCache;
             _solutionService.SolutionOpening += path => InvalidateCache();
 
-            _gitService.ChangeDetected += (sender, e) => InvalidateCache();
+            _gitService.RepositoryChanged += (sender, e) => InvalidateCache();
         }
 
         #endregion

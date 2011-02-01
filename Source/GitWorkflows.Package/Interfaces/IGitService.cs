@@ -6,7 +6,8 @@ namespace GitWorkflows.Package.Interfaces
 {
     interface IGitService
     {
-        event EventHandler ChangeDetected;
+        event EventHandler RepositoryChanged;
+        event EventHandler WorkingTreeChanged;
 
         Path RepositoryRoot
         { get; }

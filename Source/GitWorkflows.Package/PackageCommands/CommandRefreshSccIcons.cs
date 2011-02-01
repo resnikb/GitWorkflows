@@ -46,7 +46,8 @@ namespace GitWorkflows.Package.PackageCommands
 
             _sourceControlProvider.Activated += handler;
             _sourceControlProvider.Deactivated += handler;
-            _gitService.ChangeDetected += handler;
+            _gitService.RepositoryChanged += handler;
+            _gitService.WorkingTreeChanged += handler;
         }
     }
 }
