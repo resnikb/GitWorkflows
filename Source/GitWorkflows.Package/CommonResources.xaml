@@ -18,8 +18,15 @@
         <Setter Property="AttachedProperties:ButtonService.Result" Value="True"/>
     </Style>
     
-    <Style TargetType="{x:Type StackPanel}" x:Key="ButtonPanelStyle">
-        <Setter Property="HorizontalAlignment" Value="Right"/>
-        <Setter Property="Orientation" Value="Horizontal"/>
+    <Style TargetType="{x:Type ContentControl}" x:Key="OkCancelPanelStyle">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="Content">
+            <Setter.Value>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Style="{StaticResource OkButtonStyle}"/>
+                    <Button Style="{StaticResource CancelButtonStyle}"/>
+                </StackPanel>
+            </Setter.Value>
+        </Setter>
     </Style>
 </ResourceDictionary>

@@ -36,9 +36,6 @@
 
         <CheckBox Grid.Row="2" Content="C_heckout the branch after creating" IsChecked="{Binding CheckoutAfterCreating, Mode=TwoWay}"/>
         
-        <StackPanel Grid.Row="4" Style="{StaticResource ButtonPanelStyle}">
-            <Button Style="{StaticResource OkButtonStyle}"/>
-            <Button Style="{StaticResource CancelButtonStyle}"/>
-        </StackPanel>
+        <ContentControl Grid.Row="4" Style="{StaticResource OkCancelPanelStyle}"/>
     </Grid>
 </ui:DialogWindow>
