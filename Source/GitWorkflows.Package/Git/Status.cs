@@ -36,7 +36,7 @@ namespace GitWorkflows.Package.Git
             return Enumerable.Empty<Path>();
         }
 
-        public FileStatus GetStatusOf(string path)
+        public FileStatus GetStatusOf(Path path)
         {
             FileStatus status;
             if (_paths.Value.TryGetValue(path, out status))

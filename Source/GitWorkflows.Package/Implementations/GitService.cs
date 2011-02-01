@@ -140,8 +140,17 @@ namespace GitWorkflows.Package.Implementations
                 return;
 
             if (_gitRoot.IsParentOf(path))
+            {
+                // Ignore lock files, and DO NOT update the timestamp
+                var ext = path.Extension;
+                if (ext != null && ext.ToLowerInvariant() == ".lock")
+                    return;
+
                 OnRepositoryChanged();
-            else if (!path.GetCanonicalComponents().Any(c => c.StartsWith("_resharper.")))
+            }
+            else if (path.GetCanonicalComponents().Any(c => c.StartsWith("_resharper.")))
+                return;
+            else
                 OnWorkingTreeChanged();
 
             _lastChangeTime = DateTime.Now;
@@ -158,7 +167,7 @@ namespace GitWorkflows.Package.Implementations
 
         private void OnRepositoryChanged()
         {
-            _status.Invalidate();
+            OnWorkingTreeChanged();
 
             var handler = RepositoryChanged;
             if (handler != null)
