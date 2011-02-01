@@ -246,6 +246,7 @@ namespace GitWorkflows.Package.Implementations
 
         public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
         {
+            _isRefreshEnabled = true;
             RefreshSourceControlIcons();
             return VSConstants.S_OK;
         }
@@ -254,7 +255,10 @@ namespace GitWorkflows.Package.Implementations
         { return VSConstants.S_OK; }
 
         public int OnBeforeCloseSolution(object pUnkReserved)
-        { return VSConstants.S_OK; }
+        {
+            _isRefreshEnabled = false;
+            return VSConstants.S_OK;
+        }
 
         public int OnAfterCloseSolution(object pUnkReserved)
         {

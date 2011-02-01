@@ -275,9 +275,9 @@ namespace GitWorkflows.Package.FileSystem
                 return normalizedPath;
 
             var sb = new StringBuilder(Math.Max(1024, 2*normalizedPath.Length));
-            GetShortPathName(normalizedPath, sb, (uint)sb.Capacity);
-            GetLongPathName(sb.ToString(), sb, (uint)sb.Capacity);
-            return sb.ToString();
+            var shortNameLength = GetShortPathName(normalizedPath, sb, (uint)sb.Capacity);
+            var longNameLength = GetLongPathName(sb.ToString(0, (int)shortNameLength), sb, (uint)sb.Capacity);
+            return sb.ToString(0, (int)longNameLength);
         }
 
         private static string GetCanonicalPath(string relativeOrAbsolute)

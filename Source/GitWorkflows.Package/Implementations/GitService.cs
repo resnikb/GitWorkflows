@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using GitWorkflows.Package.Common;
 using GitWorkflows.Package.Git;
 using GitWorkflows.Package.Git.Commands;
@@ -20,9 +21,11 @@ namespace GitWorkflows.Package.Implementations
 
         private readonly Cache<Status> _status;
         private bool _disposed;
-        private DateTime _lastChangeTime = DateTime.MinValue;
         private Path _gitRoot;
         private FileSystemWatcher _watcher;
+        private readonly Timer _timer;
+        private readonly HashSet<Path> _changedRepositoryFiles = new HashSet<Path>();
+        private readonly HashSet<Path> _changedWorkingTreeFiles = new HashSet<Path>();
 
         public event EventHandler RepositoryChanged;
         public event EventHandler WorkingTreeChanged;
@@ -62,6 +65,8 @@ namespace GitWorkflows.Package.Implementations
         
             solutionService.SolutionClosed += DisposeWorkingTree;
             solutionService.SolutionOpening += OnSolutionOpening;
+
+            _timer = new Timer(OnChangeTimer, null, Timeout.Infinite, Timeout.Infinite);
         }
 
         ~GitService()
@@ -91,6 +96,25 @@ namespace GitWorkflows.Package.Implementations
         public FileStatus GetStatusOf(string path)
         { return _status.Value.GetStatusOf(path); }
 
+        private void OnChangeTimer(object state)
+        {
+            lock (_changedRepositoryFiles)
+            lock (_changedWorkingTreeFiles)
+            {
+                if (_changedRepositoryFiles.Count > 0)
+                {
+                    OnRepositoryChanged();
+                    _changedRepositoryFiles.Clear();
+                }
+
+                if (_changedWorkingTreeFiles.Count > 0)
+                {
+                    OnWorkingTreeChanged();
+                    _changedWorkingTreeFiles.Clear();
+                }
+            }
+        }
+
         private void OnSolutionOpening(Path solutionPath)
         {
             var directory = solutionPath.DirectoryName;
@@ -109,7 +133,6 @@ namespace GitWorkflows.Package.Implementations
 
                 _gitRoot = RepositoryRoot.Combine(".git");
 
-                _lastChangeTime = DateTime.MinValue;
                 _watcher = new FileSystemWatcher
                 {
                     Path = RepositoryRoot,
@@ -129,31 +152,27 @@ namespace GitWorkflows.Package.Implementations
 
         private void OnFileChanged(object sender, FileSystemEventArgs e)
         {
-            var changeInterval = DateTime.Now.Subtract(_lastChangeTime);
-            if (changeInterval.TotalSeconds < 0.5)
-                return;
-
             var path = new Path(e.FullPath);
-
-            // Ignore changes to directories
             if (path.IsDirectory)
                 return;
 
             if (_gitRoot.IsParentOf(path))
             {
-                // Ignore lock files, and DO NOT update the timestamp
-                var ext = path.Extension;
-                if (ext != null && ext.ToLowerInvariant() == ".lock")
+                if (path.HasExtension && path.Extension.ToLowerInvariant() == ".lock")
                     return;
 
-                OnRepositoryChanged();
+                lock (_changedRepositoryFiles)
+                    _changedRepositoryFiles.Add(path);
+                
+                _timer.Change(500, 1000);
             }
-            else if (path.GetCanonicalComponents().Any(c => c.StartsWith("_resharper.")))
-                return;
-            else
-                OnWorkingTreeChanged();
-
-            _lastChangeTime = DateTime.Now;
+            else if (!path.GetCanonicalComponents().Any(c => c.StartsWith("_resharper.")))
+            {
+                lock (_changedWorkingTreeFiles)
+                    _changedWorkingTreeFiles.Add(e.FullPath);
+                
+                _timer.Change(500, 1000);
+            }
         }
 
         private void DisposeWorkingTree()
@@ -163,12 +182,12 @@ namespace GitWorkflows.Package.Implementations
                 _watcher.Dispose();
                 _watcher = null;
             }
+
+            _timer.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
         private void OnRepositoryChanged()
         {
-            OnWorkingTreeChanged();
-
             var handler = RepositoryChanged;
             if (handler != null)
                 handler(this, EventArgs.Empty);

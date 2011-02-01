@@ -4,6 +4,7 @@ namespace GitWorkflows.Package.Common
 {
     sealed class Cache<T>
     {
+        private readonly object _syncRoot = new object();
         private readonly Func<T> _hydrate;
         private readonly TimeSpan? _validityTime;
         private DateTime _expirationTime;
@@ -13,10 +14,13 @@ namespace GitWorkflows.Package.Common
         {
             get
             {
-                if (_expirationTime <= DateTime.Now)
+                lock (_syncRoot)
                 {
-                    _cachedValue = _hydrate();
-                    _expirationTime = _validityTime.HasValue ? DateTime.Now.Add(_validityTime.Value) : DateTime.MaxValue;
+                    if (_expirationTime <= DateTime.Now)
+                    {
+                        _cachedValue = _hydrate();
+                        _expirationTime = _validityTime.HasValue ? DateTime.Now.Add(_validityTime.Value) : DateTime.MaxValue;
+                    }
                 }
 
                 return _cachedValue;
@@ -31,6 +35,9 @@ namespace GitWorkflows.Package.Common
         }
 
         public void Invalidate()
-        { _expirationTime = DateTime.Now; }
+        {
+            lock (_syncRoot)
+                _expirationTime = DateTime.Now;
+        }
     }
 }
