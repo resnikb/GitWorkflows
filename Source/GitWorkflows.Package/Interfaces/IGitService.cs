@@ -1,6 +1,6 @@
 using System;
-using GitWorkflows.Package.FileSystem;
-using GitWorkflows.Package.Git;
+using GitWorkflows.Common;
+using GitWorkflows.Git;
 
 namespace GitWorkflows.Package.Interfaces
 {
@@ -18,6 +18,6 @@ namespace GitWorkflows.Package.Interfaces
         GitApplication Git
         { get; }
 
-        FileStatus GetStatusOf(string path);
+        Status GetStatusOf(string path);
     }
 }

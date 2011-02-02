@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Windows;
-using GitWorkflows.Package.Extensions;
+using GitWorkflows.Common;
 using GitWorkflows.Package.Interfaces;
 using GitWorkflows.Package.ViewModels;
 using Microsoft.Internal.VisualStudio.PlatformUI;

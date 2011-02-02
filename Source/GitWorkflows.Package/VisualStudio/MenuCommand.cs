@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
+using GitWorkflows.Common;
 using GitWorkflows.Package.Interfaces;
 using Microsoft.VisualStudio.Shell;
-using GitWorkflows.Package.Extensions;
 
 namespace GitWorkflows.Package.VisualStudio
 {

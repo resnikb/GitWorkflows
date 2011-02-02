@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
-using GitWorkflows.Package.Common;
-using GitWorkflows.Package.Git;
+using GitWorkflows.Common;
+using GitWorkflows.Git.Commands;
 using GitWorkflows.Package.Interfaces;
 using NLog;
+using Branch = GitWorkflows.Git.Branch;
 
 namespace GitWorkflows.Package.Implementations
 {
@@ -37,20 +38,20 @@ namespace GitWorkflows.Package.Implementations
         {
             _currentBranch = new Cache<Branch>(
                 () => _gitService.IsRepositoryOpen 
-                            ? new Branch(_gitService.Git.Execute(new Git.Commands.SymbolicRef {Name="HEAD"}))
+                            ? new Branch(_gitService.Git.Execute(new SymbolicRef {Name="HEAD"}))
                             : null
             );
             
             _branches = new Cache<IEnumerable<Branch>>(
                 () => _gitService.IsRepositoryOpen 
-                            ? _gitService.Git.Execute(new Git.Commands.GetBranches()).Select(name => new Branch(name)).ToArray()
+                            ? _gitService.Git.Execute(new GetBranches()).Select(name => new Branch(name)).ToArray()
                             : Enumerable.Empty<Branch>()
             );
         }
 
         public Branch Checkout(string name, bool force)
         {
-            var command = new Git.Commands.Checkout {Name = name, Force = force};
+            var command = new Checkout {Name = name, Force = force};
             _currentBranch.Invalidate();
             _gitService.Git.Execute(command);
             _solutionService.Reload();
@@ -62,7 +63,7 @@ namespace GitWorkflows.Package.Implementations
             _branches.Invalidate();
             if (checkout)
             {
-                var checkoutCommand = new Git.Commands.Checkout { CreateBranch = true, Name = name };
+                var checkoutCommand = new Checkout { CreateBranch = true, Name = name };
                 _currentBranch.Invalidate();
                 _gitService.Git.Execute(checkoutCommand);
                 _solutionService.Reload();

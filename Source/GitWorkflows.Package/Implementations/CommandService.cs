@@ -2,11 +2,11 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using System.Linq;
+using GitWorkflows.Common;
 using GitWorkflows.Package.Interfaces;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell.Interop;
-using GitWorkflows.Package.Extensions;
 using IServiceProvider = System.IServiceProvider;
 using MenuCommand = GitWorkflows.Package.VisualStudio.MenuCommand;
 

@@ -4,13 +4,12 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using GitWorkflows.Package.Common;
-using GitWorkflows.Package.Git;
-using GitWorkflows.Package.Git.Commands;
+using GitWorkflows.Common;
+using GitWorkflows.Git;
+using GitWorkflows.Git.Commands;
 using GitWorkflows.Package.Interfaces;
 using NLog;
-using Path = GitWorkflows.Package.FileSystem.Path;
-using Status = GitWorkflows.Package.Git.Status;
+using Path = GitWorkflows.Common.Path;
 
 namespace GitWorkflows.Package.Implementations
 {
@@ -19,7 +18,7 @@ namespace GitWorkflows.Package.Implementations
     {
         private static readonly Logger Log = LogManager.GetLogger(typeof(GitService).FullName);
 
-        private readonly Cache<Status> _status;
+        private readonly Cache<StatusCollection> _status;
         private bool _disposed;
         private Path _gitRoot;
         private FileSystemWatcher _watcher;
@@ -44,7 +43,7 @@ namespace GitWorkflows.Package.Implementations
         [ImportingConstructor]
         public GitService(ISolutionService solutionService)
         {
-            _status = new Cache<Status>(
+            _status = new Cache<StatusCollection>(
                 () =>
                 {
                     var clean = new Clean
@@ -56,9 +55,8 @@ namespace GitWorkflows.Package.Implementations
                     var statusResult = Git.Execute(new Git.Commands.Status());
                     var cleanResult = Git.Execute(clean);
 
-                    return new Status(
-                        statusResult.Concat(cleanResult.Select(name => new KeyValuePair<FileStatus, string>(FileStatus.Ignored, name))),
-                        Git.WorkingDirectory
+                    return new StatusCollection(
+                        statusResult.Concat(cleanResult.Select(name => new Git.Status(System.IO.Path.Combine(Git.WorkingDirectory, name), FileStatus.Ignored)))
                     );
                 }
             );    
@@ -93,7 +91,7 @@ namespace GitWorkflows.Package.Implementations
             _disposed = true;
         }
 
-        public FileStatus GetStatusOf(string path)
+        public Git.Status GetStatusOf(string path)
         { return _status.Value.GetStatusOf(path); }
 
         private void OnChangeTimer(object state)

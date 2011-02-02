@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.Composition;
+using GitWorkflows.Common;
 using GitWorkflows.Package.Interfaces;
-using GitWorkflows.Package.Extensions;
 using GitWorkflows.Package.VisualStudio;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;

@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using GitWorkflows.Package.Git;
+using GitWorkflows.Git;
 
 namespace GitWorkflows.Package.Interfaces
 {

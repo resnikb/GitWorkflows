@@ -6,7 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Windows;
 using System.Windows.Threading;
-using GitWorkflows.Package.Extensions;
+using GitWorkflows.Common;
 
 namespace GitWorkflows.Package.ViewModels
 {

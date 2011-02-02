@@ -1,5 +1,4 @@
 using System;
-using GitWorkflows.Package.Extensions;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NLog;

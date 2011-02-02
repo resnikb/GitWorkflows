@@ -1,5 +1,5 @@
 using System;
-using GitWorkflows.Package.FileSystem;
+using GitWorkflows.Common;
 
 namespace GitWorkflows.Package.Interfaces
 {

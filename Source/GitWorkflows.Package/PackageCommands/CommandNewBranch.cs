@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Linq;
-using GitWorkflows.Package.Common;
+using GitWorkflows.Common;
 using GitWorkflows.Package.Interfaces;
 using GitWorkflows.Package.ViewModels;
 using GitWorkflows.Package.VisualStudio;

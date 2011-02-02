@@ -3,8 +3,8 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using GitWorkflows.Package.Extensions;
-using GitWorkflows.Package.Git;
+using GitWorkflows.Common;
+using GitWorkflows.Git;
 using GitWorkflows.Package.Interfaces;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -101,7 +101,8 @@ namespace GitWorkflows.Package
                 rgdwSccStatus[0] = (uint)(_active ? __SccStatus.SCC_STATUS_CONTROLLED : __SccStatus.SCC_STATUS_NOTCONTROLLED);
 
             var status = _gitService.GetStatusOf(rgpszFullPaths[0]);
-            switch (status)
+            var fileStatus = status == null ? FileStatus.NotModified : status.FileStatus;
+            switch (fileStatus)
             {
                 case FileStatus.Untracked:
                     rgsiGlyphs[0] = VsStateIcon.STATEICON_BLANK;
