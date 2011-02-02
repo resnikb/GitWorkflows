@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
+using System.Windows;
+using System.Windows.Controls;
 using GitWorkflows.Package.Interfaces;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;

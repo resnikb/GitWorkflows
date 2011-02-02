@@ -1,10 +1,13 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:AttachedProperties="clr-namespace:GitWorkflows.Package.AttachedProperties">
+                    xmlns:AttachedProperties="clr-namespace:GitWorkflows.Package.AttachedProperties"
+                    xmlns:vsfx="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.10.0"
+                    xmlns:ui="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.10.0">
 
     <Style TargetType="{x:Type Button}" x:Key="DialogButtonStyle">
-        <Setter Property="Margin" Value="5,0,0,0"/>
-        <Setter Property="Width" Value="70"/>
+        <Setter Property="Margin" Value="7,0,0,0"/>
+        <Setter Property="MinWidth" Value="75"/>
+        <Setter Property="MinHeight" Value="23"/>
     </Style>
 
     <Style TargetType="{x:Type Button}" BasedOn="{StaticResource DialogButtonStyle}" x:Key="CancelButtonStyle">
@@ -19,13 +22,16 @@
     </Style>
     
     <Style TargetType="{x:Type ContentControl}" x:Key="OkCancelPanelStyle">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="Content">
             <Setter.Value>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button Style="{StaticResource OkButtonStyle}"/>
-                    <Button Style="{StaticResource CancelButtonStyle}"/>
-                </StackPanel>
+                <Border BorderThickness="0" Background="White">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="5,20,15,5">
+                        <ui:DialogButton Style="{StaticResource OkButtonStyle}"/>
+                        <ui:DialogButton Style="{StaticResource CancelButtonStyle}"/>
+                    </StackPanel>
+                </Border>
             </Setter.Value>
         </Setter>
     </Style>
