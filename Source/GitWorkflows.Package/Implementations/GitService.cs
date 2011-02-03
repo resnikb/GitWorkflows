@@ -149,7 +149,8 @@ namespace GitWorkflows.Package.Implementations
         {
             try
             {
-                return Git.Execute(new RevParse(RevParse.PropertyOption.TopLevelDirectory));
+                var app = new GitApplication(directory);
+                return app.Execute(new RevParse(RevParse.PropertyOption.TopLevelDirectory));
             }
             catch
             {
