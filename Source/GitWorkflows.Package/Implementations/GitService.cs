@@ -118,7 +118,7 @@ namespace GitWorkflows.Package.Implementations
             var directory = solutionPath.DirectoryName;
             Log.Debug("Loading solution from directory: {0}", directory);
 
-            RepositoryRoot = WorkingTree.FindTopLevelDirectory(directory);
+            RepositoryRoot = FindTopLevelDirectory(directory);
             if ( ReferenceEquals(RepositoryRoot, null) )
             {
                 Log.Info("Directory is not in a Git working tree");
@@ -142,6 +142,18 @@ namespace GitWorkflows.Package.Implementations
                 _watcher.Changed += OnFileChanged;
                 _watcher.Renamed += OnFileRenamed;
                 _watcher.EnableRaisingEvents = true;
+            }
+        }
+
+        private Path FindTopLevelDirectory(string directory)
+        {
+            try
+            {
+                return Git.Execute(new RevParse(RevParse.PropertyOption.TopLevelDirectory));
+            }
+            catch
+            {
+                return null;
             }
         }
 
