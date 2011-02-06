@@ -1,6 +1,6 @@
 using NUnit.Framework;
 
-namespace GitWorkflows.Common.Tests.GitTests
+namespace GitWorkflows.Git.Tests
 {
     [TestFixture]
     class WhenRepositoryIsNotEmpty : WhenRepositoryIsEmpty

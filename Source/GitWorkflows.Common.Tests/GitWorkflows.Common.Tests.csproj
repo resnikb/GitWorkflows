@@ -44,10 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="GitTests\WhenDirectoryIsNotRepository.cs" />
-    <Compile Include="GitTests\WhenRepositoryIsEmpty.cs" />
-    <Compile Include="GitTests\WhenRepositoryIsNotEmpty.cs" />
-    <Compile Include="ArgumentsTests\EnsureNotNullTests.cs" />
+    <Compile Include="CachedValueTests.cs" />
+    <Compile Include="EnsureNotNullTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

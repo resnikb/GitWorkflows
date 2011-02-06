@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using NUnit.Framework;
 
-namespace GitWorkflows.Common.Tests.GitTests
+namespace GitWorkflows.Git.Tests
 {
     [TestFixture]
     public abstract class WhenDirectoryIsNotRepository

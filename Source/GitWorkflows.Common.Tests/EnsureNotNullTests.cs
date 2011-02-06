@@ -1,7 +1,7 @@
 using System;
 using NUnit.Framework;
 
-namespace GitWorkflows.Common.Tests.ArgumentsTests
+namespace GitWorkflows.Common.Tests
 {
     [TestFixture]
     public class EnsureNotNullTests

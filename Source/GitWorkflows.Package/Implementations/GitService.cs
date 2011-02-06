@@ -18,7 +18,7 @@ namespace GitWorkflows.Package.Implementations
     {
         private static readonly Logger Log = LogManager.GetLogger(typeof(GitService).FullName);
 
-        private readonly Cache<StatusCollection> _status;
+        private readonly CachedValue<StatusCollection> _status;
         private bool _disposed;
         private Path _gitRoot;
         private FileSystemWatcher _watcher;
@@ -43,7 +43,7 @@ namespace GitWorkflows.Package.Implementations
         [ImportingConstructor]
         public GitService(ISolutionService solutionService)
         {
-            _status = new Cache<StatusCollection>(
+            _status = new CachedValue<StatusCollection>(
                 () =>
                 {
                     var clean = new Clean

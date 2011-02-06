@@ -1,4 +1,4 @@
-using GitWorkflows.Package.ViewModels;
+using GitWorkflows.Controls.ViewModels;
 
 namespace GitWorkflows.Package.Interfaces
 {

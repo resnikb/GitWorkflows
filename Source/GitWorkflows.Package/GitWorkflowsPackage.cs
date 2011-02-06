@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.ComponentModel.Composition.Primitives;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
@@ -51,7 +52,7 @@ namespace GitWorkflows.Package
     [Guid(Constants.guidPackagePkgString)]
     public sealed class GitWorkflowsPackage : Microsoft.VisualStudio.Shell.Package
     {
-        private AssemblyCatalog _partCatalog;
+        private ComposablePartCatalog _partCatalog;
         private CompositionContainer _partContainer;
 
         /// <summary>
@@ -79,7 +80,7 @@ namespace GitWorkflows.Package
             var nlogConfigPath = System.IO.Path.Combine(myDirectory, "config.nlog");
             LogManager.Configuration = new XmlLoggingConfiguration(nlogConfigPath);
 
-            _partCatalog = new AssemblyCatalog(Assembly.GetExecutingAssembly());
+            _partCatalog = new DirectoryCatalog( System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) );
             _partContainer = new CompositionContainer(_partCatalog);
             
             var compositionBatch = new CompositionBatch();

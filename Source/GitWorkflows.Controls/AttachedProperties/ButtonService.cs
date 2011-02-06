@@ -1,9 +1,9 @@
 using System.Windows;
 using System.Windows.Controls;
 
-namespace GitWorkflows.Package.AttachedProperties
+namespace GitWorkflows.Controls.AttachedProperties
 {
-    static class ButtonService
+    public static class ButtonService
     {
         public static readonly DependencyProperty ResultProperty = DependencyProperty.RegisterAttached(
             "Result",

@@ -2,9 +2,9 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace GitWorkflows.Package.AttachedProperties
+namespace GitWorkflows.Controls.AttachedProperties
 {
-    static class TextBoxService
+    public static class TextBoxService
     {
         public static readonly DependencyProperty SelectOnFocusProperty = DependencyProperty.RegisterAttached(
             "SelectOnFocus",

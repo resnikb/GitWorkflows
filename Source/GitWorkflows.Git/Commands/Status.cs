@@ -35,46 +35,45 @@ namespace GitWorkflows.Git.Commands
             if (parts.Length != 2)
                 return;
 
-            var pathSpecification = parts[1];
-            var path = System.IO.Path.Combine(baseDirectory, pathSpecification);
+            var path = parts[1];
 
             switch (parts[0].ToUpperInvariant()[0])
             {
                 case 'A':
-                    result.Add(new Git.Status(path, FileStatus.Added));
+                    AddStatus(baseDirectory, result, path, FileStatus.Added);
                     break;
 
                 case 'D':
-                    result.Add(new Git.Status(path, FileStatus.Removed));
+                    AddStatus(baseDirectory, result, path, FileStatus.Removed);
                     break;
 
                 case 'C':
-                    AddTwoPaths(pathSpecification, FileStatus.CopySource, FileStatus.CopyDestination, baseDirectory, result);
+                    AddStatus(baseDirectory, result, path, FileStatus.CopySource, FileStatus.CopyDestination);
                     break;
 
                 case 'R':
-                    AddTwoPaths(pathSpecification, FileStatus.RenameSource, FileStatus.RenameDestination, baseDirectory, result);
+                    AddStatus(baseDirectory, result, path, FileStatus.RenameSource, FileStatus.RenameDestination);
                     break;
 
                 case 'M':
-                    result.Add(new Git.Status(path, FileStatus.Modified));
+                    AddStatus(baseDirectory, result, path, FileStatus.Modified);
                     break;
 
                 case 'U':
-                    result.Add(new Git.Status(path, FileStatus.Conflicted));
+                    AddStatus(baseDirectory, result, path, FileStatus.Conflicted);
                     break;
 
                 case '=':
-                    result.Add(new Git.Status(path, FileStatus.NotModified));
+                    AddStatus(baseDirectory, result, path, FileStatus.NotModified);
                     break;
 
                 default:
-                    result.Add(new Git.Status(path, FileStatus.Untracked));
+                    AddStatus(baseDirectory, result, path, FileStatus.Untracked);
                     break;
             }
         }
 
-        private static void AddTwoPaths(string pathSpecification, FileStatus sourceStatus, FileStatus destinationStatus, string baseDirectory, List<Git.Status> result)
+        private static void AddStatus(string baseDirectory, List<Git.Status> result, string pathSpecification, FileStatus sourceStatus, FileStatus? destinationStatus = null)
         {
             var splitIndex = pathSpecification.IndexOf("->");
             if (splitIndex < 0)
@@ -86,7 +85,7 @@ namespace GitWorkflows.Git.Commands
 
                 var sourceStatusObject = new Git.Status(System.IO.Path.Combine(baseDirectory, source), sourceStatus);
                 result.Add(sourceStatusObject);
-                result.Add(new Git.Status(System.IO.Path.Combine(baseDirectory, destination), destinationStatus, sourceStatusObject));
+                result.Add(new Git.Status(System.IO.Path.Combine(baseDirectory, destination), destinationStatus.Value, sourceStatusObject));
             }
         }
     }

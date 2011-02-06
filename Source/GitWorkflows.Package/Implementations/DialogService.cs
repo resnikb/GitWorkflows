@@ -2,11 +2,13 @@ using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Windows;
+using System.Windows.Media;
 using GitWorkflows.Common;
+using GitWorkflows.Controls.ViewModels;
 using GitWorkflows.Package.Interfaces;
-using GitWorkflows.Package.ViewModels;
 using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.PlatformUI;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
 namespace GitWorkflows.Package.Implementations
@@ -30,6 +32,7 @@ namespace GitWorkflows.Package.Implementations
             if (dialogWindow != null)
                 return dialogWindow.ShowModal() == true;
 
+            window.Background = (Brush) Application.Current.Resources[VsBrushes.EnvironmentBackgroundGradientKey];
             var shell = _serviceProvider.GetService<SVsUIShell, IVsUIShell>();
 
             IntPtr hwnd;
@@ -38,7 +41,7 @@ namespace GitWorkflows.Package.Implementations
             shell.EnableModeless(0);
             try
             {
-                return WindowHelper.ShowModal(window, hwnd) != 0;
+                return WindowHelper.ShowModal(window, hwnd) != DialogResult.Cancel;
             }
             finally
             {

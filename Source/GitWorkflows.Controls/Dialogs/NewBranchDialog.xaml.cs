@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.Composition;
 using System.Windows;
 
-namespace GitWorkflows.Package.Dialogs
+namespace GitWorkflows.Controls.Dialogs
 {
     /// <summary>
     /// Interaction logic for NewBranchDialog.xaml

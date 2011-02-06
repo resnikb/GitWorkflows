@@ -21,8 +21,8 @@ namespace GitWorkflows.Package.Implementations
         [Import]
         private ISolutionService _solutionService;
 
-        private readonly Cache<Branch> _currentBranch;
-        private readonly Cache<IEnumerable<Branch>> _branches;
+        private readonly CachedValue<Branch> _currentBranch;
+        private readonly CachedValue<IEnumerable<Branch>> _branches;
 
         public Branch CurrentBranch
         {
@@ -36,13 +36,13 @@ namespace GitWorkflows.Package.Implementations
 
         public BranchManager()
         {
-            _currentBranch = new Cache<Branch>(
+            _currentBranch = new CachedValue<Branch>(
                 () => _gitService.IsRepositoryOpen 
                             ? new Branch(_gitService.Git.Execute(new SymbolicRef {Name="HEAD"}))
                             : null
             );
             
-            _branches = new Cache<IEnumerable<Branch>>(
+            _branches = new CachedValue<IEnumerable<Branch>>(
                 () => _gitService.IsRepositoryOpen 
                             ? _gitService.Git.Execute(new GetBranches()).Select(name => new Branch(name)).ToArray()
                             : Enumerable.Empty<Branch>()

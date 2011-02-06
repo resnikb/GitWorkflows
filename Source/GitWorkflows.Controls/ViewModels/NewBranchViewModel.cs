@@ -1,6 +1,6 @@
-namespace GitWorkflows.Package.ViewModels
+namespace GitWorkflows.Controls.ViewModels
 {
-    class NewBranchViewModel : ViewModel
+    public class NewBranchViewModel : ViewModel
     {
         public string SourceName
         { get; private set; }

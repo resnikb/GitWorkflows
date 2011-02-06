@@ -57,7 +57,7 @@ namespace GitWorkflows.Package.PackageCommands
                     if (_branchManager.Branches.FirstOrDefault(b => b.Name == newBranch) != null) 
                         _branchManager.Checkout(newBranch);
                     else
-                        _commandService.Execute<CommandNewBranch>(new EventArgs<string>(newBranch));
+                        _commandService.Execute<CommandNewBranch>(newBranch);
                 }
             }
         }

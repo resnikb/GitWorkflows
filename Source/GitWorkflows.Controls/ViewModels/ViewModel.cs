@@ -8,9 +8,9 @@ using System.Windows;
 using System.Windows.Threading;
 using GitWorkflows.Common;
 
-namespace GitWorkflows.Package.ViewModels
+namespace GitWorkflows.Controls.ViewModels
 {
-    abstract class ViewModel : INotifyPropertyChanged
+    public abstract class ViewModel : INotifyPropertyChanged
     {
         private static readonly Dispatcher _dispatcher = Application.Current.Dispatcher;
         private static readonly Dictionary<string, PropertyChangedEventArgs> _propertyChangedArgsCache = new Dictionary<string, PropertyChangedEventArgs>();

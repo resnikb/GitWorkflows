@@ -1,11 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using GitWorkflows.Git;
 using GitWorkflows.Git.Commands;
 using NUnit.Framework;
-using Status = GitWorkflows.Git.Commands.Status;
 
-namespace GitWorkflows.Common.Tests.GitTests
+namespace GitWorkflows.Git.Tests
 {
     [TestFixture]
     class WhenRepositoryIsEmpty : WhenDirectoryIsNotRepository
@@ -22,7 +20,7 @@ namespace GitWorkflows.Common.Tests.GitTests
         [Test]
         public void Status_ReturnsEmptyCollection()
         {
-            var result = Git.Execute(new Status());
+            var result = Git.Execute(new Commands.Status());
 
             Assert.That(result, Is.Empty);
         }
@@ -33,7 +31,7 @@ namespace GitWorkflows.Common.Tests.GitTests
             var contents = new Dictionary<string, object> {{"x", null}};
             PopulateDirectory(Git.WorkingDirectory, contents);
 
-            var result = Git.Execute(new Status()).ToArray();
+            var result = Git.Execute(new Commands.Status()).ToArray();
             var expected = new[]
             {
                 new KeyValuePair<FileStatus, string>(FileStatus.Untracked, "x"),                    

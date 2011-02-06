@@ -114,9 +114,6 @@ namespace GitWorkflows.Common
         public static string ToDelimitedString<T>(this IEnumerable<T> items, string delimiter)
         { return items.Select(item => item.ToString()).ToDelimitedString(delimiter); }
 
-        public static string ToCsv<T>(this IEnumerable<T> items)
-        { return items.ToDelimitedString(","); }
-
         public static void Fill<T>(this IList<T> collection, T value)
         {
             Arguments.EnsureNotNull(new{collection});
