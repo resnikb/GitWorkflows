@@ -120,11 +120,10 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Implementations\BranchManager.cs" />
     <Compile Include="Implementations\SolutionService.cs" />
-    <Compile Include="Interfaces\IBranchManager.cs" />
     <Compile Include="Interfaces\ISolutionService.cs" />
     <Compile Include="PackageCommands\CommandRefreshSccIcons.cs" />
+    <Compile Include="PackageCommands\CommandReloadSolution.cs" />
     <Compile Include="ServiceProviderExtensions.cs" />
     <Compile Include="Logging\VsOutputPaneTarget.cs" />
     <Compile Include="PackageCommands\CommandBranchComboBox.cs" />
@@ -150,9 +149,7 @@
     <Compile Include="Implementations\DialogService.cs" />
     <Compile Include="Interfaces\ICommandService.cs" />
     <Compile Include="Interfaces\IDialogService.cs" />
-    <Compile Include="Interfaces\IGitService.cs" />
     <Compile Include="VisualStudio\MenuCommand.cs" />
-    <Compile Include="Implementations\GitService.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">

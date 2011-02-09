@@ -5,11 +5,11 @@ using System.Windows;
 using System.Windows.Media;
 using GitWorkflows.Common;
 using GitWorkflows.Controls.ViewModels;
-using GitWorkflows.Package.Interfaces;
 using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using IDialogService = GitWorkflows.Package.Interfaces.IDialogService;
 
 namespace GitWorkflows.Package.Implementations
 {
@@ -17,14 +17,14 @@ namespace GitWorkflows.Package.Implementations
     class DialogService : IDialogService
     {
         [Import]
-        private ExportProvider _exportProvider;
+        private CompositionContainer _container;
 
         [Import]
         private IServiceProvider _serviceProvider;
 
         public bool ShowDialog<TViewModel>(TViewModel viewModel) where TViewModel : ViewModel
         {
-            var window = _exportProvider.GetExportedValue<Window>(typeof(TViewModel).Name);
+            var window = _container.GetExportedValue<Window>(typeof(TViewModel).Name);
             window.WindowStartupLocation = WindowStartupLocation.CenterOwner;
             window.DataContext = viewModel;
 

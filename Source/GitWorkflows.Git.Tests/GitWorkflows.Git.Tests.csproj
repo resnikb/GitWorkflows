@@ -44,10 +44,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyFixture.cs" />
     <Compile Include="CommandsTests\RevParseTests.cs" />
     <Compile Include="CommandsTests\StatusTests.cs" />
     <Compile Include="CommandsTests\SymbolicRefTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RepositoryMonitorTests.cs" />
     <Compile Include="WhenDirectoryIsNotRepository.cs" />
     <Compile Include="WhenRepositoryIsEmpty.cs" />
     <Compile Include="WhenRepositoryIsNotEmpty.cs" />

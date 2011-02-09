@@ -3,19 +3,20 @@ using GitWorkflows.Common;
 
 namespace GitWorkflows.Git
 {
+    [Flags]
     public enum FileStatus
     {
-        Untracked,
-        Ignored,
-        NotModified,
-        Added,
-        Removed,
-        Modified,
-        CopySource,
-        CopyDestination,
-        RenameSource,
-        RenameDestination,
-        Conflicted,
+        Untracked         = 0x0001,
+        Ignored           = 0x0002,
+        NotModified       = 0x0004,
+        Added             = 0x0008,
+        Removed           = 0x0010,
+        Modified          = 0x0020,
+        CopySource        = 0x0040,
+        CopyDestination   = 0x0080,
+        RenameSource      = 0x0100,
+        RenameDestination = 0x0200,
+        Conflicted        = 0x0400,
     }
 
     public sealed class Status : IEquatable<Status>
@@ -24,10 +25,10 @@ namespace GitWorkflows.Git
         { get; private set; }
         
         public FileStatus FileStatus
-        { get; private set; }
+        { get; internal set; }
 
         public Status RelatedStatus
-        { get; private set; }
+        { get; internal set; }
 
         public Status(Path filePath, FileStatus fileStatus, Status relatedStatus = null)
         {
@@ -36,9 +37,6 @@ namespace GitWorkflows.Git
             FilePath = filePath;
             FileStatus = fileStatus;
             RelatedStatus = relatedStatus;
-
-            if (RelatedStatus != null)
-                RelatedStatus.RelatedStatus = this;
         }
 
         /// <summary>

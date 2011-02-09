@@ -27,7 +27,7 @@ namespace GitWorkflows.Common.Subprocess
 
             var info = new ProcessStartInfo(_application.Command, _arguments.ToDelimitedString(" "))
             {
-                WorkingDirectory = _application.WorkingDirectory,
+                WorkingDirectory = _application.WorkingDirectory ?? System.IO.Path.GetDirectoryName(_application.Command),
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardError = true,
@@ -35,7 +35,7 @@ namespace GitWorkflows.Common.Subprocess
                 RedirectStandardInput = true
             };
 
-            Log.Info("** (in {0}) {1} {2}", _application.WorkingDirectory, _application.Command, _arguments.ToDelimitedString(" "));
+            Log.Info("** (in {0}) {1} {2}", info.WorkingDirectory, _application.Command, _arguments.ToDelimitedString(" "));
             using (var process = new Process())
             {
                 process.StartInfo = info;

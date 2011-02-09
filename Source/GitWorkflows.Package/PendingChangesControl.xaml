@@ -9,9 +9,14 @@
              Name="MyToolWindow"
              Background="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowBackgroundKey}}">
     <Grid>
-        <StackPanel Orientation="Vertical">
-            <TextBlock Margin="10" HorizontalAlignment="Center" Foreground="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowTextKey}}">This is a toolwindow with WPF content</TextBlock>
-            <Button Content="_Click Me!" Width="80" Height="80" Name="button1" Click="button1_Click" />
-        </StackPanel>
+        <ListView ItemsSource="{Binding Status}">
+            <ListView.View>
+                <GridView AllowsColumnReorder="False">
+                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding FilePath.FileName}"/>
+                    <GridViewColumn Header="Path" DisplayMemberBinding="{Binding FilePath.DirectoryName}"/>
+                    <GridViewColumn Header="Status" DisplayMemberBinding="{Binding FileStatus}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Grid>
 </UserControl>

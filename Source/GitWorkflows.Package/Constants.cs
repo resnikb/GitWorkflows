@@ -10,7 +10,7 @@ namespace GitWorkflows.Package
         public const string guidPackagePkgString = "72192AEA-3808-4CAF-B4E4-8D91038A6F92";
         
         // Unique ID of the source control provider; this is also used as the command UI context to show/hide the pacakge UI
-        public const string guidSccProviderString = "0B8BF143-8FA6-4E07-8D16-73344CF5C51D";
+        public const string guidSccProviderString = "0B8BF143-8FA6-4E07-8D16-73344CF5C51D";         
 
         // The guid of the source control provider service (implementing IVsSccProvider interface)
         public const string guidSccProviderServiceString = "0AD903E3-250E-4C6C-8D79-ABBB6198FFA8";
@@ -29,5 +29,6 @@ namespace GitWorkflows.Package
         public const int idBranchComboGetBranches = 0x402;
         public const int cmdidNewBranch           = 0x403;
         public const int cmdidRefreshSccIcons     = 0x902;
+        public const int cmdidReloadSolution      = 0x903;
     };
 }

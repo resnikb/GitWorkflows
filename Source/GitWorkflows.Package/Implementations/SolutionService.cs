@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using GitWorkflows.Common;
+using GitWorkflows.Git;
 using GitWorkflows.Package.Interfaces;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -15,43 +16,62 @@ namespace GitWorkflows.Package.Implementations
     {
         private static readonly Logger Log = LogManager.GetLogger(typeof(SolutionService).FullName);
 
+        [Import]
+        private IRepositoryService _repositoryService;
+
         private readonly IVsSolution _vsSolution;
         private readonly IServiceProvider _serviceProvider;
-        private readonly uint _cookieSolutionEvents;
+        private uint _cookieSolutionEvents;
         private bool _isRefreshEnabled;
         private bool _disposed;
-
-        public event Action SolutionClosed;
-        public event Action<Path> SolutionOpening;
+        private bool _isReloading;
 
         [ImportingConstructor]
-        public SolutionService(IServiceProvider serviceProvider)
+        public SolutionService(IServiceProvider serviceProvider, SourceControlProvider sourceControlProvider)
         {
             _serviceProvider = serviceProvider;
             _vsSolution = serviceProvider.GetService<SVsSolution, IVsSolution>();
             _isRefreshEnabled = true;
 
-            _vsSolution.AdviseSolutionEvents(this, out _cookieSolutionEvents);
-        }
+            sourceControlProvider.Activated += (sender, e) =>
+            {
+                string directory, fileName, userFile;
+                _vsSolution.GetSolutionInfo(out directory, out fileName, out userFile);
 
-        public void Initialize()
-        {
-            string directory, fileName, userFile;
-            if ( ErrorHandler.Failed(_vsSolution.GetSolutionInfo(out directory, out fileName, out userFile)) || string.IsNullOrEmpty(fileName))
-                return;
+                _vsSolution.AdviseSolutionEvents(this, out _cookieSolutionEvents);
+                if (string.IsNullOrEmpty(directory))
+                    _repositoryService.CloseRepository();
+                else
+                    _repositoryService.OpenRepositoryAt(directory);
+            };
 
-            var handler = SolutionOpening;
-            if (handler != null)
-                handler(new Path(fileName));
+            sourceControlProvider.Deactivated += (sender, e) => 
+            {
+                StopListeningToSolutionEvents();
+                _repositoryService.CloseRepository();
+            };
         }
 
         public void Reload()
         {
-            string directory, fileName, userFile;
-            ErrorHandler.ThrowOnFailure(_vsSolution.GetSolutionInfo(out directory, out fileName, out userFile));
+            if (_isReloading)
+                return;
 
-            ErrorHandler.ThrowOnFailure(_vsSolution.CloseSolutionElement((uint)__VSSLNSAVEOPTIONS.SLNSAVEOPT_PromptSave, null, 0));
-            ErrorHandler.ThrowOnFailure(_vsSolution.OpenSolutionFile((uint)__VSSLNOPENOPTIONS.SLNOPENOPT_Silent, fileName));
+            _isReloading = true;
+
+            try
+            {
+                string directory, fileName, userFile;
+                if (ErrorHandler.Failed(_vsSolution.GetSolutionInfo(out directory, out fileName, out userFile)) || string.IsNullOrEmpty(fileName))
+                    return;
+
+                ErrorHandler.ThrowOnFailure(_vsSolution.CloseSolutionElement((uint)__VSSLNSAVEOPTIONS.SLNSAVEOPT_PromptSave, null, 0));
+                ErrorHandler.ThrowOnFailure(_vsSolution.OpenSolutionFile((uint)__VSSLNOPENOPTIONS.SLNOPENOPT_Silent, fileName));
+            }
+            finally
+            {
+                _isReloading = false;
+            }
         }
 
         public void RefreshSourceControlIcons()
@@ -146,12 +166,7 @@ namespace GitWorkflows.Package.Implementations
         /// </returns>
         /// <param name="pszSolutionFilename">The name of the solution file.</param>
         public int OnBeforeOpenSolution(string pszSolutionFilename)
-        {
-            var handler = SolutionOpening;
-            if (handler != null)
-                handler(pszSolutionFilename);
-            return VSConstants.S_OK;    
-        }
+        { return VSConstants.S_OK; }
 
         /// <summary>
         /// Fired when background loading of projects is beginning again after the initial solution
@@ -246,7 +261,14 @@ namespace GitWorkflows.Package.Implementations
         public int OnAfterOpenSolution(object pUnkReserved, int fNewSolution)
         {
             _isRefreshEnabled = true;
-            RefreshSourceControlIcons();
+
+            if (!_isReloading)
+            { 
+                string directory, fileName, userFile;
+                _vsSolution.GetSolutionInfo(out directory, out fileName, out userFile);
+                _repositoryService.OpenRepositoryAt(directory);
+            }
+
             return VSConstants.S_OK;
         }
 
@@ -261,9 +283,8 @@ namespace GitWorkflows.Package.Implementations
 
         public int OnAfterCloseSolution(object pUnkReserved)
         {
-            var handler = SolutionClosed;
-            if (handler != null)
-                handler();
+            if (!_isReloading)
+                _repositoryService.CloseRepository();
 
             return VSConstants.S_OK;
         }
@@ -285,12 +306,18 @@ namespace GitWorkflows.Package.Implementations
                 return;
 
             if (disposing)
+                StopListeningToSolutionEvents();
+
+            _disposed = true;
+        }
+
+        private void StopListeningToSolutionEvents()
+        {
+            if (_cookieSolutionEvents != VSConstants.VSCOOKIE_NIL)
             {
                 _vsSolution.UnadviseSolutionEvents(_cookieSolutionEvents);
+                _cookieSolutionEvents = VSConstants.VSCOOKIE_NIL;
             }
-
-            // Dispose unmanaged resources.
-            _disposed = true;
         }
     }
 }

@@ -1,12 +1,8 @@
-using System;
 using System.ComponentModel.Composition;
-using GitWorkflows.Common;
+using GitWorkflows.Git;
 using GitWorkflows.Package.Interfaces;
 using GitWorkflows.Package.VisualStudio;
-using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 
 namespace GitWorkflows.Package.PackageCommands
 {
@@ -20,7 +16,7 @@ namespace GitWorkflows.Package.PackageCommands
         private ISolutionService _solutionService;
 
         [Import]
-        private IGitService _gitService;
+        private IRepositoryService _repositoryService;
 
         public CommandRefreshSccIcons() 
             : base(Constants.guidPackageCmdSet, Constants.cmdidRefreshSccIcons)
@@ -33,21 +29,14 @@ namespace GitWorkflows.Package.PackageCommands
         {
             base.OnImportsSatisfied();
 
-            var shell = ServiceProvider.GetService<SVsUIShell, IVsUIShell>();
-            
-            EventHandler handler = (sender, e) => 
-            {
-                var guid = CommandID.Guid;
-                object variant = null;
-                ErrorHandler.ThrowOnFailure(
-                    shell.PostExecCommand(ref guid, (uint)CommandID.ID, (uint)OLECMDEXECOPT.OLECMDEXECOPT_DODEFAULT, ref variant)
-                );
-            };
+            _sourceControlProvider.Activated += (sender, e) => PostExec();
+            _sourceControlProvider.Deactivated += (sender, e) => PostExec();
 
-            _sourceControlProvider.Activated += handler;
-            _sourceControlProvider.Deactivated += handler;
-            _gitService.RepositoryChanged += handler;
-            _gitService.WorkingTreeChanged += handler;
+            _repositoryService.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == "Status")
+                    PostExec();
+            };
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 
 namespace GitWorkflows.Common
 {
@@ -44,6 +45,10 @@ namespace GitWorkflows.Common
                         if (!_isValid)
                         {
                             _cachedValue = _hydrate();
+
+                            // Putting a barrier here ensures that _cachedValue is set
+                            // before _isValid, so that no threads can see a ghost value
+                            Thread.MemoryBarrier();
                             _isValid = true;
                         }
                     }
@@ -51,6 +56,22 @@ namespace GitWorkflows.Common
 
                 return _cachedValue;
             }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the cached value is valid.
+        /// </summary>
+        /// 
+        /// <value><c>true</c> if the cached value is valid, <c>false</c> if it will be revalidated
+        /// the next time it is retrieved.</value>
+        /// 
+        /// <remarks>
+        ///     <para>This method will return <c>true</c> immediately after construction, and after
+        ///     a call to <see cref="Invalidate"/>.</para>
+        /// </remarks>
+        public bool IsValid
+        {
+            get { return _isValid; }
         }
 
         /// <summary>

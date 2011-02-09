@@ -1,11 +1,12 @@
 ﻿using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
-using System.ComponentModel.Composition.Primitives;
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.ComponentModel.Design;
+using GitWorkflows.Common;
 using GitWorkflows.Package.Interfaces;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell;
@@ -52,8 +53,8 @@ namespace GitWorkflows.Package
     [Guid(Constants.guidPackagePkgString)]
     public sealed class GitWorkflowsPackage : Microsoft.VisualStudio.Shell.Package
     {
-        private ComposablePartCatalog _partCatalog;
-        private CompositionContainer _partContainer;
+        internal CompositionContainer PartContainer
+        { get; private set; }
 
         /// <summary>
         /// Default constructor of the package.
@@ -76,33 +77,44 @@ namespace GitWorkflows.Package
         {
             base.Initialize();
 
-            var myDirectory = System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var nlogConfigPath = System.IO.Path.Combine(myDirectory, "config.nlog");
+            var thisAssembly = Assembly.GetExecutingAssembly();
+            var packageDirectory = System.IO.Path.GetDirectoryName(thisAssembly.Location);
+            Debug.Assert(!string.IsNullOrEmpty(packageDirectory));
+
+            var nlogConfigPath = System.IO.Path.Combine(packageDirectory, "config.nlog");
             LogManager.Configuration = new XmlLoggingConfiguration(nlogConfigPath);
 
-            _partCatalog = new DirectoryCatalog( System.IO.Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) );
-            _partContainer = new CompositionContainer(_partCatalog);
+            // The catalogs are specified in order of importance. If an import can be satisfied
+            // from more than one catalog, priority is given to the first specified catalog.
+            // By putting this assembly as the first catalog, we ensure that services defined here are imported
+            // first.
+            var exportProviders = new[]
+            {
+                new CatalogExportProvider(new AssemblyCatalog(thisAssembly)),
+                new CatalogExportProvider(new AssemblyCatalog(System.IO.Path.Combine(packageDirectory, "GitWorkflows.Git.dll"))),
+                new CatalogExportProvider(new AssemblyCatalog(System.IO.Path.Combine(packageDirectory, "GitWorkflows.Controls.dll"))),
+            };
+
+            PartContainer = new CompositionContainer(exportProviders);
+
+            exportProviders.ForEach(p => p.SourceProvider = PartContainer);
             
             var compositionBatch = new CompositionBatch();
             compositionBatch.AddExportedValue<IServiceProvider>(this);
             compositionBatch.AddExportedValue<IServiceContainer>(this);
             compositionBatch.AddExportedValue<Microsoft.VisualStudio.Shell.Package>(this);
-            compositionBatch.AddExportedValue<ExportProvider>(_partContainer);
+            compositionBatch.AddExportedValue(PartContainer);
 
-            _partContainer.Compose(compositionBatch);
+            PartContainer.Compose(compositionBatch);
 
-            _partContainer.GetExportedValue<ICommandService>();
-            _partContainer.GetExportedValue<ISolutionService>().Initialize();
+            PartContainer.GetExportedValue<ICommandService>();
+            PartContainer.GetExportedValue<ISolutionService>();
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
-            {
-                using (_partCatalog)
-                using (_partContainer)
-                { }
-           }
+                PartContainer.Dispose();
 
             base.Dispose(disposing);
         }

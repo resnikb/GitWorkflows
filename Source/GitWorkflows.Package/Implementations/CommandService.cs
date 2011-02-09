@@ -22,10 +22,13 @@ namespace GitWorkflows.Package.Implementations
         public IEnumerable<MenuCommand> Commands
         { get; set; }
 
-        public bool ExecuteLater(MenuCommand command, object args)
-        { return ExecuteLater(command.CommandID, args); }
+        public void ExecuteLater<T>(object args) where T:MenuCommand
+        { ExecuteLater(Commands.OfType<T>().Single(), args); }
 
-        public bool ExecuteLater(CommandID command, object args)
+        public void ExecuteLater(MenuCommand command, object args)
+        { ExecuteLater(command.CommandID, args); }
+
+        public void ExecuteLater(CommandID command, object args)
         {
             var shell = _serviceProvider.GetService<SVsUIShell, IVsUIShell>();
 
@@ -33,14 +36,12 @@ namespace GitWorkflows.Package.Implementations
             ErrorHandler.ThrowOnFailure( 
                 shell.PostExecCommand(ref guid, (uint)command.ID, (uint)OLECMDEXECOPT.OLECMDEXECOPT_DODEFAULT, ref args)
             );
-            return true;
         }
 
-        public bool Execute<TCommand>(object args) where TCommand : MenuCommand
+        public void Execute<TCommand>(object args) where TCommand : MenuCommand
         {
             var command = Commands.OfType<TCommand>().Single();
             command.Command.Invoke(args);
-            return true;
         }
     }
 }

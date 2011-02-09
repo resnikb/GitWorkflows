@@ -1,11 +1,9 @@
 using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using GitWorkflows.Common;
 using GitWorkflows.Git;
-using GitWorkflows.Package.Interfaces;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NLog;
@@ -19,7 +17,7 @@ namespace GitWorkflows.Package
         private static readonly Logger Log = LogManager.GetLogger(typeof(SourceControlProvider).FullName);
 
         [Import]
-        private IGitService _gitService;
+        private IRepositoryService _repositoryService;
 
         private bool _active;
 
@@ -100,8 +98,15 @@ namespace GitWorkflows.Package
             if (rgdwSccStatus != null)
                 rgdwSccStatus[0] = (uint)(_active ? __SccStatus.SCC_STATUS_CONTROLLED : __SccStatus.SCC_STATUS_NOTCONTROLLED);
 
-            var status = _gitService.GetStatusOf(rgpszFullPaths[0]);
+            var status = _repositoryService.Status.GetStatusOf(rgpszFullPaths[0]);
             var fileStatus = status == null ? FileStatus.NotModified : status.FileStatus;
+            
+            // TODO: Handle status combinations properly
+            // For now, if a file status is a combination of modified and something else, 
+            // we treat it as modified
+            if ((fileStatus & FileStatus.Modified) != 0)
+                fileStatus = FileStatus.Modified;
+
             switch (fileStatus)
             {
                 case FileStatus.Untracked:

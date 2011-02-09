@@ -9,8 +9,9 @@ namespace GitWorkflows.Package.Interfaces
         IEnumerable<MenuCommand> Commands
         { get; }
         
-        bool ExecuteLater(MenuCommand command, object args);    
-        bool ExecuteLater(CommandID command, object args);    
-        bool Execute<TCommand>(object args) where TCommand:MenuCommand;
+        void ExecuteLater<TCommand>(object args = null) where TCommand:MenuCommand;    
+        void ExecuteLater(MenuCommand command, object args = null);    
+        void ExecuteLater(CommandID command, object args = null);    
+        void Execute<TCommand>(object args = null) where TCommand:MenuCommand;
     }
 }

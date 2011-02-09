@@ -70,7 +70,7 @@ namespace GitWorkflows.Package {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Pending Changes.
+        ///   Looks up a localized string similar to Git Workflows: Pending Changes.
         /// </summary>
         internal static string ToolWindowTitle {
             get {

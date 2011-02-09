@@ -132,6 +132,16 @@
         </Strings>
       </Button>
 
+      <Button guid="guidPackageCmdSet" id="cmdidReloadSolution" priority="0x0100" type="Button">
+        <Parent guid="guidPackageCmdSet" id="igrpNoUi"/>
+        <CommandFlag>DefaultDisabled</CommandFlag>
+        <CommandFlag>PostExec</CommandFlag>
+        
+        <Strings>
+          <ButtonText>Reload Solution</ButtonText>
+        </Strings>
+      </Button>
+
     </Buttons>
    
     <!--The bitmaps section is used to define the bitmaps that are used for the commands.-->
@@ -245,6 +255,7 @@
       <IDSymbol name="imnuNoUi" value="0x900"/>
       <IDSymbol name="igrpNoUi" value="0x901"/>
       <IDSymbol name="cmdidRefreshSccIcons" value="0x902"/>
+      <IDSymbol name="cmdidReloadSolution" value="0x903"/>
     </GuidSymbol>
     
     <GuidSymbol name="guidImages" value="{22741094-f46a-4934-a37c-5f782800bd84}" >

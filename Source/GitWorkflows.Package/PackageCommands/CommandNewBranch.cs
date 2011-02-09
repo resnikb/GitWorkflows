@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 using GitWorkflows.Controls.ViewModels;
+using GitWorkflows.Git;
 using GitWorkflows.Package.Interfaces;
 using GitWorkflows.Package.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -16,6 +17,8 @@ namespace GitWorkflows.Package.PackageCommands
 
         [Import]
         private IDialogService _dialogService;
+
+        private volatile bool _isEnabled;
 
         public CommandNewBranch()
             : base(Constants.guidPackageCmdSet, Constants.cmdidNewBranch)
@@ -35,6 +38,16 @@ namespace GitWorkflows.Package.PackageCommands
         }
 
         protected override void DoUpdateStatus(object sender, EventArgs e)
-        { Command.Enabled = _branchManager.Branches.Any(); }
+        { Command.Enabled = _isEnabled; }
+
+        public override void OnImportsSatisfied()
+        {
+            base.OnImportsSatisfied();
+            _branchManager.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == "Branches")
+                    _isEnabled = _branchManager.Branches.Any();                                    
+            };
+        }
     }
 }

@@ -50,6 +50,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CachedValue.cs" />
+    <Compile Include="IDialogService.cs" />
+    <Compile Include="IViewModelFactory.cs" />
+    <Compile Include="NotifyPropertyChanged.cs" />
     <Compile Include="ServiceNotFoundException.cs" />
     <Compile Include="Arguments.cs" />
     <Compile Include="EnumerableExtensions.cs" />

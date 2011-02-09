@@ -2,8 +2,12 @@ using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using GitWorkflows.Common;
-using GitWorkflows.Package.Interfaces;
+using GitWorkflows.Git;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
+using IServiceProvider = System.IServiceProvider;
 
 namespace GitWorkflows.Package.VisualStudio
 {
@@ -22,7 +26,7 @@ namespace GitWorkflows.Package.VisualStudio
         { get; private set; }
 
         [Import]
-        protected IGitService GitService
+        protected IRepositoryService RepositoryService
         { get; private set; }
 
         protected virtual void SetupCommand(OleMenuCommand command)
@@ -39,6 +43,16 @@ namespace GitWorkflows.Package.VisualStudio
 
         protected MenuCommand(Guid menuGroup, int commandId)
         { CommandID = new CommandID(menuGroup, commandId); }
+
+        public void PostExec(object args = null)
+        {
+            var shell = ServiceProvider.GetService<SVsUIShell, IVsUIShell>();
+
+            var guid = CommandID.Guid;
+            ErrorHandler.ThrowOnFailure(
+                shell.PostExecCommand(ref guid, (uint)CommandID.ID, (uint)OLECMDEXECOPT.OLECMDEXECOPT_DODEFAULT, ref args)
+            );
+        }
 
         public void SourceControlProviderDeactivated()
         {
@@ -77,7 +91,7 @@ namespace GitWorkflows.Package.VisualStudio
         }
 
         protected virtual void DoUpdateStatus(object sender, EventArgs e)
-        { Command.Enabled = GitService.IsRepositoryOpen; }
+        { Command.Enabled = RepositoryService.IsGitRepository; }
 
         protected virtual void OnStatusChanged(object sender, EventArgs e)
         {}

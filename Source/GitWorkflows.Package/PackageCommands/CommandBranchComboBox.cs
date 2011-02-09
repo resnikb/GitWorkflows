@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Runtime.InteropServices;
-using GitWorkflows.Common;
+using GitWorkflows.Git;
 using GitWorkflows.Package.Interfaces;
 using GitWorkflows.Package.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -17,6 +17,8 @@ namespace GitWorkflows.Package.PackageCommands
 
         [Import]
         private ICommandService _commandService;
+
+        private volatile bool _isEnabled;
 
         public CommandBranchComboBox() 
             : base(Constants.guidPackageCmdSet, Constants.idBranchCombo)
@@ -54,15 +56,28 @@ namespace GitWorkflows.Package.PackageCommands
                 var newBranch = input.ToString();
                 if (newBranch != _branchManager.CurrentBranch.Name)
                 {
-                    if (_branchManager.Branches.FirstOrDefault(b => b.Name == newBranch) != null) 
-                        _branchManager.Checkout(newBranch);
+                    if (!_branchManager.Branches.Any(b => b.Name == newBranch))
+                        _commandService.ExecuteLater<CommandNewBranch>(newBranch);
                     else
-                        _commandService.Execute<CommandNewBranch>(newBranch);
+                    {
+                        _branchManager.Checkout(newBranch);
+                        _commandService.ExecuteLater<CommandReloadSolution>();
+                    }
                 }
             }
         }
 
         protected override void DoUpdateStatus(object sender, EventArgs e)
-        { Command.Enabled = _branchManager.Branches.Any(); }
+        { Command.Enabled = _isEnabled; }
+
+        public override void OnImportsSatisfied()
+        {
+            base.OnImportsSatisfied();
+            _branchManager.PropertyChanged += (sender, e) =>
+            {
+                if (e.PropertyName == "Branches")
+                    _isEnabled = _branchManager.Branches.Any();                                    
+            };
+        }
     }
 }
