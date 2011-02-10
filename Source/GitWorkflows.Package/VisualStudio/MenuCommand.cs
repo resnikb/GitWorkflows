@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Design;
 using GitWorkflows.Common;
-using GitWorkflows.Git;
+using GitWorkflows.Services;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;

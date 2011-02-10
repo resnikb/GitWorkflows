@@ -1,4 +1,4 @@
-namespace GitWorkflows.Common
+namespace GitWorkflows.Services
 {
     /// <summary>
     /// Represents a factory that creates view models.

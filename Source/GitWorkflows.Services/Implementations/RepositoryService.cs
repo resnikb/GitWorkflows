@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 using GitWorkflows.Common;
+using GitWorkflows.Git;
 using GitWorkflows.Git.Commands;
 using NLog;
+using Status = GitWorkflows.Git.Status;
 
-namespace GitWorkflows.Git
+namespace GitWorkflows.Services.Implementations
 {
     [Export(typeof(IRepositoryService))]
     public class RepositoryService : NotifyPropertyChanged, IRepositoryService, IDisposable
@@ -64,7 +66,7 @@ namespace GitWorkflows.Git
                         IncludeDirectories = false
                     };
 
-                    var statusResult = Git.Execute(new Commands.Status());
+                    var statusResult = Git.Execute(new Git.Commands.Status());
                     var cleanResult = Git.Execute(clean);
 
                     return new StatusCollection(

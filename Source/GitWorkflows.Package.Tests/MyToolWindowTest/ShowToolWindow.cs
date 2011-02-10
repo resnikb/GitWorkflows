@@ -11,9 +11,9 @@ PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
 
 using System;
 using System.Reflection;
-using Microsoft.VsSDK.UnitTestLibrary;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VsSDK.UnitTestLibrary;
 
 namespace GitWorkflows.Package.Tests.MyToolWindowTest
 {

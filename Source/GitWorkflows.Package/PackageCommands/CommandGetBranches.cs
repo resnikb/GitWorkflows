@@ -2,8 +2,8 @@ using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Runtime.InteropServices;
-using GitWorkflows.Git;
 using GitWorkflows.Package.VisualStudio;
+using GitWorkflows.Services;
 using Microsoft.VisualStudio.Shell;
 
 namespace GitWorkflows.Package.PackageCommands

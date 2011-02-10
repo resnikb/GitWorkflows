@@ -2,10 +2,10 @@ using System;
 using System.ComponentModel.Composition;
 using System.Linq;
 using GitWorkflows.Controls.ViewModels;
-using GitWorkflows.Git;
-using GitWorkflows.Package.Interfaces;
 using GitWorkflows.Package.VisualStudio;
+using GitWorkflows.Services;
 using Microsoft.VisualStudio.Shell;
+using IDialogService = GitWorkflows.Package.Interfaces.IDialogService;
 
 namespace GitWorkflows.Package.PackageCommands
 {

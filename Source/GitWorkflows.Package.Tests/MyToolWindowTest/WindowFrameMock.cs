@@ -10,8 +10,8 @@ PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
 ***************************************************************************/
 
 using System;
-using Microsoft.VsSDK.UnitTestLibrary;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VsSDK.UnitTestLibrary;
 
 namespace GitWorkflows.Package.Tests.MyToolWindowTest
 {

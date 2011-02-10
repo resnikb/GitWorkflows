@@ -1,6 +1,6 @@
 using System;
 
-namespace GitWorkflows.Common
+namespace GitWorkflows.Services
 {
     /// <summary>
     /// Represents a service for displaying dialogs.

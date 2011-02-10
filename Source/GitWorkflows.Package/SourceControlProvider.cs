@@ -4,6 +4,7 @@ using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
 using GitWorkflows.Common;
 using GitWorkflows.Git;
+using GitWorkflows.Services;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NLog;

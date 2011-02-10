@@ -208,6 +208,10 @@
       <Project>{93E73497-98FA-4005-8541-98D2188A8CC4}</Project>
       <Name>GitWorkflows.Git</Name>
     </ProjectReference>
+    <ProjectReference Include="..\GitWorkflows.Services\GitWorkflows.Services.csproj">
+      <Project>{01D52E44-1B0F-4B5E-AE39-A4B0C3C4D8E1}</Project>
+      <Name>GitWorkflows.Services</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <UseCodebase>true</UseCodebase>

@@ -9,12 +9,12 @@ PURPOSE, MERCHANTABILITY, OR NON-INFRINGEMENT.
 
 ***************************************************************************/
 
-using System.Reflection;
 using System.ComponentModel.Design;
-using Microsoft.VsSDK.UnitTestLibrary;
+using System.Reflection;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Microsoft.VisualStudio.Shell;
+using Microsoft.VsSDK.UnitTestLibrary;
 
 namespace GitWorkflows.Package.Tests.MenuItemTests
 {

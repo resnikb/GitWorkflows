@@ -5,8 +5,9 @@ using System.Linq;
 using GitWorkflows.Common;
 using GitWorkflows.Git.Commands;
 using NLog;
+using Branch = GitWorkflows.Git.Branch;
 
-namespace GitWorkflows.Git
+namespace GitWorkflows.Services.Implementations
 {
     [Export(typeof(IBranchManager))]
     class BranchManager : NotifyPropertyChanged, IBranchManager, IPartImportsSatisfiedNotification
@@ -53,7 +54,7 @@ namespace GitWorkflows.Git
             }
             else
             {
-                var branchCommand = new Commands.Branch {Name = name};
+                var branchCommand = new Git.Commands.Branch {Name = name};
                 _repositoryService.Git.Execute(branchCommand);
             }
 

@@ -1,5 +1,5 @@
-﻿using System.Globalization;
-using System.ComponentModel.Design;
+﻿using System.ComponentModel.Design;
+using System.Globalization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VsSDK.IntegrationTestLibrary;
 using Microsoft.VSSDK.Tools.VsIdeTesting;

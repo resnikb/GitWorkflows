@@ -11,7 +11,7 @@ using GitWorkflows.Common;
 using GitWorkflows.Controls;
 using GitWorkflows.Controls.ViewModels;
 using GitWorkflows.Git;
-using GitWorkflows.Git.Commands;
+using GitWorkflows.Services;
 using Microsoft.VisualStudio.Shell;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;

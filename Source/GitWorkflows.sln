@@ -28,6 +28,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitWorkflows.Controls", "Gi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitWorkflows.Git.Tests", "GitWorkflows.Git.Tests\GitWorkflows.Git.Tests.csproj", "{CE1E84FB-7C60-42BF-9125-1463FFED1C7F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitWorkflows.Services", "GitWorkflows.Services\GitWorkflows.Services.csproj", "{01D52E44-1B0F-4B5E-AE39-A4B0C3C4D8E1}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = GitWorkflows1.vsmdi
@@ -131,6 +133,16 @@ Global
 		{CE1E84FB-7C60-42BF-9125-1463FFED1C7F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{CE1E84FB-7C60-42BF-9125-1463FFED1C7F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{CE1E84FB-7C60-42BF-9125-1463FFED1C7F}.Release|x86.ActiveCfg = Release|Any CPU
+		{01D52E44-1B0F-4B5E-AE39-A4B0C3C4D8E1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01D52E44-1B0F-4B5E-AE39-A4B0C3C4D8E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01D52E44-1B0F-4B5E-AE39-A4B0C3C4D8E1}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{01D52E44-1B0F-4B5E-AE39-A4B0C3C4D8E1}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{01D52E44-1B0F-4B5E-AE39-A4B0C3C4D8E1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{01D52E44-1B0F-4B5E-AE39-A4B0C3C4D8E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01D52E44-1B0F-4B5E-AE39-A4B0C3C4D8E1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01D52E44-1B0F-4B5E-AE39-A4B0C3C4D8E1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{01D52E44-1B0F-4B5E-AE39-A4B0C3C4D8E1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{01D52E44-1B0F-4B5E-AE39-A4B0C3C4D8E1}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

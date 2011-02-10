@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using GitWorkflows.Common;
+using GitWorkflows.Git;
 
-namespace GitWorkflows.Git
+namespace GitWorkflows.Services
 {
     public interface IRepositoryService : INotifyPropertyChanged
     {

@@ -1,7 +1,7 @@
 ﻿using System;
+using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.VSSDK.Tools.VsIdeTesting;
-using Microsoft.VisualStudio.Shell.Interop;
 
 namespace GitWorkflows.Package.IntegrationTests
 {
