@@ -61,7 +61,7 @@
                                 <!-- StackPanel will not do this, and thus the text is never trimmed -->
                                 <DockPanel>
                                     <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="0,0,2,0"/>
-                                    <Image Source="{Binding Icon}" Width="16" Height="16" Margin="2,0,2,0"/>
+                                    <Image Source="{Binding Icon}" Width="16" Height="16" Margin="2,0,2,0" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
                                     <TextBlock Text="{Binding PathInRepository}" Style="{StaticResource ChangeTextStyle}"/>
                                 </DockPanel>
                             </DataTemplate>
