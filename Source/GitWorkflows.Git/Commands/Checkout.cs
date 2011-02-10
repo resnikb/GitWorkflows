@@ -14,7 +14,10 @@ namespace GitWorkflows.Git.Commands
             new Tuple<Regex, Action<ApplicationDefinition, Tuple<int, string>>>(new Regex("Your local changes to the following files would be overwritten by checkout", RegexOptions.IgnoreCase), HandleUncomittedChanges),                                                                                          
         };
 
-        public string Name
+        public string BranchName
+        { get; set; }
+
+        public IEnumerable<string> FilePaths
         { get; set; }
 
         public bool Force
@@ -25,9 +28,6 @@ namespace GitWorkflows.Git.Commands
 
         public override void Setup(Runner runner)
         {
-            if (string.IsNullOrWhiteSpace(Name))
-                throw new InvalidOperationException("Name must be specified");
-
             runner.Arguments("checkout");
 
             if (Force)
@@ -36,7 +36,15 @@ namespace GitWorkflows.Git.Commands
             if (CreateBranch)
                 runner.Arguments("-b");
 
-            runner.Arguments(Name);
+            if (FilePaths != null && FilePaths.Any() && string.IsNullOrWhiteSpace(BranchName))
+                runner.Arguments("--");
+            else if (!string.IsNullOrWhiteSpace(BranchName))
+                runner.Arguments(BranchName);
+            else
+                throw new InvalidOperationException("Name must be specified");
+
+            if (FilePaths != null)
+                FilePaths.ForEach(p => runner.Arguments(p));
         }
 
         protected override void ThrowException(ApplicationDefinition app, Tuple<int, string> result)

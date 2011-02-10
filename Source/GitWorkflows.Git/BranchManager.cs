@@ -48,7 +48,7 @@ namespace GitWorkflows.Git
         {
             if (checkout)
             {
-                var checkoutCommand = new Checkout { CreateBranch = true, Name = name };
+                var checkoutCommand = new Checkout { CreateBranch = true, BranchName = name };
                 _repositoryService.Git.Execute(checkoutCommand);
             }
             else
@@ -69,7 +69,7 @@ namespace GitWorkflows.Git
         {
             _currentBranch.Invalidate();
             
-            var command = new Checkout {Name = name};
+            var command = new Checkout {BranchName = name};
             _repositoryService.Git.Execute(command);
         }
 

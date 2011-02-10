@@ -42,7 +42,7 @@
     	              VerticalAlignment="Stretch"
     	              Margin="0" />
             
-            <ListView Grid.Row="2" ItemsSource="{Binding Changes}">
+        <ListView Grid.Row="2" ItemsSource="{Binding Changes}" x:Name="ChangeList" SelectionChanged="ChangeList_SelectionChanged" MouseRightButtonDown="ChangeList_MouseRightButtonDown">
             <ListView.Resources>
                 <Style TargetType="{x:Type TextBlock}" x:Key="ChangeTextStyle">
                     <Setter Property="Foreground" Value="{Binding DataContext.StatusColor, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}"/>
@@ -50,6 +50,13 @@
                     <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
                 </Style>
             </ListView.Resources>
+
+            <ListView.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="View differences..." Command="{Binding CommandViewDifferences}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"/>
+                    <MenuItem Header="Reset all changes" Command="{Binding CommandResetChanges}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"/>
+                </ContextMenu>    
+            </ListView.ContextMenu>
             
             <ListView.View>
                 <GridView AllowsColumnReorder="False">

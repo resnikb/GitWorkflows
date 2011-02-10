@@ -58,6 +58,8 @@
   <ItemGroup>
     <Compile Include="AttachedProperties\ButtonService.cs" />
     <Compile Include="AttachedProperties\TextBoxService.cs" />
+    <Compile Include="DelegateCommand.cs" />
+    <Compile Include="DependencyObjectExtensions.cs" />
     <Compile Include="Dialogs\NewBranchDialog.xaml.cs">
       <DependentUpon>NewBranchDialog.xaml</DependentUpon>
     </Compile>

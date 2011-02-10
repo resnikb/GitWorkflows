@@ -1,18 +1,24 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using GitWorkflows.Common;
+using GitWorkflows.Controls;
 using GitWorkflows.Controls.ViewModels;
 using GitWorkflows.Git;
+using GitWorkflows.Git.Commands;
 using Microsoft.VisualStudio.Shell;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
+using Status = GitWorkflows.Git.Status;
 
 namespace GitWorkflows.Package
 {
@@ -28,11 +34,19 @@ namespace GitWorkflows.Package
     [Guid("459f8ad1-6802-4d74-bd43-86fe92ed898b")]
     public class PendingChangesWindow : ToolWindowPane
     {
+        private IRepositoryService _repositoryService;
+
         public ObservableCollection<PendingChangeViewModel> Changes
         { get; private set; }
 
         public string CommitMessage
         { get; set; }
+
+        public DelegateCommand<IList> CommandViewDifferences
+        { get; private set; }
+
+        public DelegateCommand<IList> CommandResetChanges
+        { get; private set; }
 
         /// <summary>
         /// Standard constructor for the tool window.
@@ -53,10 +67,41 @@ namespace GitWorkflows.Package
 
             Changes = new ObservableCollection<PendingChangeViewModel>();
 
+            CommandViewDifferences = new DelegateCommand<IList>(
+                ViewDifferences,
+                vm => vm != null && vm.Count == 1 && (vm.Cast<PendingChangeViewModel>().Single().Status.FileStatus & FileStatus.Modified) != 0
+            );
+
+            CommandResetChanges = new DelegateCommand<IList>(
+                ResetChanges,
+                vm => vm != null && vm.Count > 0
+            );
+
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on 
             // the object returned by the Content property.
             base.Content = new PendingChangesControl { DataContext = this };
+        }
+
+        private void ViewDifferences(IList pendingChangeViewModels)
+        {
+            var command = new Diff
+            {
+                ViewInTool = true, 
+                FilePath = pendingChangeViewModels.Cast<PendingChangeViewModel>().Single().PathInRepository
+            };
+
+            _repositoryService.Git.ExecuteAsync(command);
+        }
+
+        private void ResetChanges(IList pendingChangeViewModels)
+        {
+            var command = new Checkout
+            {
+                FilePaths = pendingChangeViewModels.Cast<PendingChangeViewModel>().Select(vm => vm.PathInRepository)
+            };
+
+            _repositoryService.Git.Execute(command);
         }
 
         public override void OnToolWindowCreated()
@@ -64,15 +109,15 @@ namespace GitWorkflows.Package
             base.OnToolWindowCreated();
             
             var package = (GitWorkflowsPackage)Package;
-            var repositoryService = package.PartContainer.GetExportedValue<IRepositoryService>();
-            repositoryService.PropertyChanged += (sender, e) =>
+            _repositoryService = package.PartContainer.GetExportedValue<IRepositoryService>();
+            _repositoryService.PropertyChanged += (sender, e) =>
             {
                 if (e.PropertyName == "Status")
-                    ViewModel.ExecuteOnDispatcher(() => Refresh(repositoryService));
+                    ViewModel.ExecuteOnDispatcher(() => Refresh(_repositoryService));
             };
 
             // Refresh now, to initialize with any changes
-            Refresh(repositoryService);
+            Refresh(_repositoryService);
         }
 
         private void Refresh(IRepositoryService repositoryService)
@@ -82,6 +127,12 @@ namespace GitWorkflows.Package
                 .Where(s => (s.FileStatus & FileStatus.Ignored) == 0)
                 .Select(s => new PendingChangeViewModel(repositoryService, s))
                 .ForEach(Changes.Add);
+        }
+
+        public void SelectionChanged()
+        {
+            CommandViewDifferences.RaiseCanExecuteChanged();
+            CommandResetChanges.RaiseCanExecuteChanged();
         }
     }
 
@@ -114,8 +165,12 @@ namespace GitWorkflows.Package
         public string FullPath
         { get; private set; }
 
+        public Status Status
+        { get; private set; }
+
         public PendingChangeViewModel(IRepositoryService repositoryService, Status status)
         {
+            Status = status;
             PathInRepository = status.FilePath.GetRelativeTo(repositoryService.BaseDirectory);
             ProjectName = string.Empty;
             StatusText = status.FileStatus.ToString();

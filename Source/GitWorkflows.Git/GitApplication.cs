@@ -16,5 +16,13 @@ namespace GitWorkflows.Git
             var result = runner.Execute();
             return command.ProcessResult(this, result);
         }
+
+        public void ExecuteAsync<T>(Command<T> command)
+        {
+            var runner = CreateRunner();
+            command.Setup(runner);
+
+            runner.ExecuteAsync();
+        }
     }
 }

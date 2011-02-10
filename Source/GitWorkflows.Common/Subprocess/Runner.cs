@@ -20,7 +20,13 @@ namespace GitWorkflows.Common.Subprocess
         public void Arguments(params string[] arguments)
         { _arguments.AddRange(arguments.Select(Quote)); }
 
+        public void ExecuteAsync()
+        { Execute(false); }
+
         public Tuple<int, string> Execute()
+        { return Execute(true); }
+
+        private Tuple<int, string> Execute(bool waitForProcess)
         {
             var output = new StringBuilder();
             var errors = new StringBuilder();
@@ -36,17 +42,21 @@ namespace GitWorkflows.Common.Subprocess
             };
 
             Log.Info("** (in {0}) {1} {2}", info.WorkingDirectory, _application.Command, _arguments.ToDelimitedString(" "));
-            using (var process = new Process())
+            var process = new Process();
+            try
             {
                 process.StartInfo = info;
                 process.EnableRaisingEvents = true;
 
-                process.ErrorDataReceived  += (sender, args) => AppendLine(errors, args);
+                process.ErrorDataReceived += (sender, args) => AppendLine(errors, args);
                 process.OutputDataReceived += (sender, args) => AppendLine(output, args);
 
                 process.Start();
                 process.BeginErrorReadLine();
                 process.BeginOutputReadLine();
+
+                if (!waitForProcess)
+                    return null;
 
                 process.WaitForExit();
 
@@ -55,6 +65,11 @@ namespace GitWorkflows.Common.Subprocess
                     outputBuffer = errors;
 
                 return new Tuple<int, string>(process.ExitCode, outputBuffer.ToString().Trim());
+            }
+            finally
+            {
+                if (waitForProcess)
+                    process.Dispose();
             }
         }
 

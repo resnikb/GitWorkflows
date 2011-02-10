@@ -64,6 +64,7 @@
     <Compile Include="Commands\Clean.cs" />
     <Compile Include="Commands\Command.cs" />
     <Compile Include="Commands\Commit.cs" />
+    <Compile Include="Commands\Diff.cs" />
     <Compile Include="Commands\GetBranches.cs" />
     <Compile Include="Commands\Init.cs" />
     <Compile Include="Commands\Reset.cs" />

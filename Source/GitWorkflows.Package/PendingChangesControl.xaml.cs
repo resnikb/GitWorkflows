@@ -1,4 +1,7 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using GitWorkflows.Controls;
 
 namespace GitWorkflows.Package
 {
@@ -10,12 +13,24 @@ namespace GitWorkflows.Package
         public PendingChangesControl()
         { InitializeComponent(); }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1300:SpecifyMessageBoxOptions")]
-        private void button1_Click(object sender, RoutedEventArgs e)
+        private void ChangeList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            MessageBox.Show(string.Format(System.Globalization.CultureInfo.CurrentUICulture, "We are inside {0}.button1_Click()", this.ToString()),
-                            "Pending Changes");
+            var vm = (PendingChangesWindow)DataContext;
+            vm.SelectionChanged();
+        }
 
+        private void ChangeList_MouseRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            var hitItem = ChangeList.InputHitTest(e.GetPosition(ChangeList)) as DependencyObject;
+            if (hitItem == null)
+                return;
+
+            var item = hitItem as ListViewItem ?? hitItem.GetVisualAncestor<ListViewItem>();
+            if (item == null)
+                return;
+
+            // Select this item in the list view
+            item.IsSelected = true;
         }
     }
 }
