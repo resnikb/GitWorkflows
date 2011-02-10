@@ -91,7 +91,7 @@ namespace GitWorkflows.Package
             var exportProviders = new[]
             {
                 new CatalogExportProvider(new AssemblyCatalog(thisAssembly)),
-                new CatalogExportProvider(new AssemblyCatalog(System.IO.Path.Combine(packageDirectory, "GitWorkflows.Git.dll"))),
+                new CatalogExportProvider(new AssemblyCatalog(System.IO.Path.Combine(packageDirectory, "GitWorkflows.Services.dll"))),
                 new CatalogExportProvider(new AssemblyCatalog(System.IO.Path.Combine(packageDirectory, "GitWorkflows.Controls.dll"))),
             };
 
