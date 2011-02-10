@@ -6,15 +6,91 @@
              xmlns:vsfx="clr-namespace:Microsoft.VisualStudio.Shell;assembly=Microsoft.VisualStudio.Shell.10.0"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300"
-             Name="MyToolWindow"
+             Name="RootControl"
              Background="{DynamicResource {x:Static vsfx:VsBrushes.ToolWindowBackgroundKey}}">
-    <Grid>
-        <ListView ItemsSource="{Binding Status}">
+    
+    <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+    	<DockPanel Grid.Row="0" Background="{Binding Background, ElementName=RootControl}">
+    		<TextBlock DockPanel.Dock="Top"
+    		           Text="Commit message"
+    		           HorizontalAlignment="Stretch"
+    		           Margin="5" />
+            
+    		<TextBox DockPanel.Dock="Bottom"
+    		         AcceptsReturn="True"
+    		         AcceptsTab="True"
+    		         VerticalScrollBarVisibility="Auto"
+    		         HorizontalScrollBarVisibility="Hidden"
+    		         Text="{Binding CommitMessage, Mode=TwoWay}" />
+    	</DockPanel>
+        
+        <GridSplitter Grid.Row="1"
+                      ResizeDirection="Rows"
+    	              Width="Auto"
+    	              Height="3"
+    	              HorizontalAlignment="Stretch"
+    	              VerticalAlignment="Stretch"
+    	              Margin="0" />
+            
+            <ListView Grid.Row="2" ItemsSource="{Binding Changes}">
+            <ListView.Resources>
+                <Style TargetType="{x:Type TextBlock}" x:Key="ChangeTextStyle">
+                    <Setter Property="Foreground" Value="{Binding DataContext.StatusColor, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}"/>
+                    <Setter Property="TextWrapping" Value="NoWrap"/>
+                    <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                </Style>
+            </ListView.Resources>
+            
             <ListView.View>
                 <GridView AllowsColumnReorder="False">
-                    <GridViewColumn Header="Name" DisplayMemberBinding="{Binding FilePath.FileName}"/>
-                    <GridViewColumn Header="Path" DisplayMemberBinding="{Binding FilePath.DirectoryName}"/>
-                    <GridViewColumn Header="Status" DisplayMemberBinding="{Binding FileStatus}"/>
+                    <GridViewColumn Header="Path">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <!-- Using DockPanel instead of StackPanel, because DockPanel will resize the textbox (last control) -->
+                                <!-- when the column is resized. This allows the control to display ellipsis when the text doesn't fit -->
+                                <!-- StackPanel will not do this, and thus the text is never trimmed -->
+                                <DockPanel>
+                                    <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" Margin="0,0,2,0"/>
+                                    <Image Source="{Binding Icon}" Width="16" Height="16" Margin="2,0,2,0"/>
+                                    <TextBlock Text="{Binding PathInRepository}" Style="{StaticResource ChangeTextStyle}"/>
+                                </DockPanel>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    
+                    <GridViewColumn Header="Project">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding ProjectName}" Style="{StaticResource ChangeTextStyle}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn Header="Status">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding StatusText}" Style="{StaticResource ChangeTextStyle}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+
+                    <GridViewColumn Header="Full Path">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding FullPath}" Style="{StaticResource ChangeTextStyle}"/>
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
                 </GridView>
             </ListView.View>
         </ListView>

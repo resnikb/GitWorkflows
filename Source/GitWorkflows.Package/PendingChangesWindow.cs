@@ -1,10 +1,18 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Windows;
+using System.Windows.Interop;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using GitWorkflows.Common;
 using GitWorkflows.Controls.ViewModels;
 using GitWorkflows.Git;
 using Microsoft.VisualStudio.Shell;
+using Brush = System.Windows.Media.Brush;
+using Brushes = System.Windows.Media.Brushes;
 
 namespace GitWorkflows.Package
 {
@@ -20,8 +28,11 @@ namespace GitWorkflows.Package
     [Guid("459f8ad1-6802-4d74-bd43-86fe92ed898b")]
     public class PendingChangesWindow : ToolWindowPane
     {
-        public ObservableCollection<Status> Status
+        public ObservableCollection<PendingChangeViewModel> Changes
         { get; private set; }
+
+        public string CommitMessage
+        { get; set; }
 
         /// <summary>
         /// Standard constructor for the tool window.
@@ -40,7 +51,7 @@ namespace GitWorkflows.Package
             BitmapResourceID = 301;
             BitmapIndex = 1;
 
-            Status = new ObservableCollection<Status>();
+            Changes = new ObservableCollection<PendingChangeViewModel>();
 
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on 
@@ -66,10 +77,109 @@ namespace GitWorkflows.Package
 
         private void Refresh(IRepositoryService repositoryService)
         {
-            Status.Clear();
+            Changes.Clear();
             repositoryService.Status.Statuses
                 .Where(s => (s.FileStatus & FileStatus.Ignored) == 0)
-                .ForEach(Status.Add);
+                .Select(s => new PendingChangeViewModel(repositoryService, s))
+                .ForEach(Changes.Add);
         }
+    }
+
+    public class PendingChangeViewModel
+    {
+        private static readonly Brush _brushModified  = Brushes.Blue;
+        private static readonly Brush _brushStaged    = Brushes.Purple;
+        private static readonly Brush _brushUntracked = Brushes.Black;
+        private static readonly Brush _brushDeleted   = Brushes.Red;
+        private static readonly Brush _brushDefault   = Brushes.Gray;
+
+        public Brush StatusColor
+        { get; private set; }
+
+        public bool IsSelected
+        { get; set; }
+
+        public ImageSource Icon
+        { get; private set; }
+
+        public string PathInRepository
+        { get; private set; }
+
+        public string ProjectName
+        { get; private set; }
+
+        public string StatusText
+        { get; private set; }
+
+        public string FullPath
+        { get; private set; }
+
+        public PendingChangeViewModel(IRepositoryService repositoryService, Status status)
+        {
+            PathInRepository = status.FilePath.GetRelativeTo(repositoryService.BaseDirectory);
+            ProjectName = string.Empty;
+            StatusText = status.FileStatus.ToString();
+            FullPath = status.FilePath;
+
+            if ( (status.FileStatus & FileStatus.Modified) != 0 )
+                StatusColor = _brushModified;
+            else if (status.FileStatus == FileStatus.Untracked)
+                StatusColor = _brushUntracked;
+            else if (status.FileStatus == FileStatus.Added)
+                StatusColor = _brushStaged;
+            else if (status.FileStatus == FileStatus.Removed || status.FileStatus == FileStatus.RenameSource)
+                StatusColor = _brushDeleted;
+            else
+                StatusColor = _brushDefault;
+
+            Icon = CreateIcon(status.FilePath);
+        }
+
+        private static ImageSource CreateIcon(string path)
+        {
+            var shinfo = new SHFILEINFO();
+            SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_SMALLICON);
+
+            var iconHandle = shinfo.hIcon;
+            if (IntPtr.Zero == iconHandle)
+                return null;
+
+            try
+            {
+                return Imaging.CreateBitmapSourceFromHIcon(
+                    iconHandle,
+                    Int32Rect.Empty,
+                    BitmapSizeOptions.FromEmptyOptions()
+                );
+            }
+            finally
+            {
+                DestroyIcon(iconHandle);
+            }
+        }
+
+        private const uint SHGFI_ICON = 0x100;
+        private const uint SHGFI_LARGEICON = 0x0; // 'Large icon
+        private const uint SHGFI_SMALLICON = 0x1; // 'Small icon
+
+        [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Auto)]
+        public struct SHFILEINFO
+        {
+             public IntPtr hIcon;
+             public int iIcon;
+             public uint dwAttributes;
+
+             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
+             public string szDisplayName;
+
+             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
+             public string szTypeName;
+        };
+
+        [DllImport("shell32.dll", CharSet=CharSet.Auto)]
+        private static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
+
+        [DllImport("User32.dll")]
+        public static extern int DestroyIcon(IntPtr hIcon);
     }
 }
