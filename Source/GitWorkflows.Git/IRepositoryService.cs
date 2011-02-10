@@ -26,5 +26,7 @@ namespace GitWorkflows.Git
 
         void OpenRepositoryAt(Path path);
         void CloseRepository();
+        void ResetChanges(IEnumerable<Path> files);
+        void DisplayUnstagedChangesAsync(Path file);
     }
 }

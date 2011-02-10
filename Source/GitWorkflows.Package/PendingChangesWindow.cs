@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -68,40 +65,19 @@ namespace GitWorkflows.Package
             Changes = new ObservableCollection<PendingChangeViewModel>();
 
             CommandViewDifferences = new DelegateCommand<IList>(
-                ViewDifferences,
-                vm => vm != null && vm.Count == 1 && (vm.Cast<PendingChangeViewModel>().Single().Status.FileStatus & FileStatus.Modified) != 0
+                items => _repositoryService.DisplayUnstagedChangesAsync(items.Cast<PendingChangeViewModel>().Single().Status.FilePath),
+                items => items != null && items.Count == 1 && (((PendingChangeViewModel)items[0]).Status.FileStatus & FileStatus.Modified) != 0
             );
 
             CommandResetChanges = new DelegateCommand<IList>(
-                ResetChanges,
-                vm => vm != null && vm.Count > 0
+                items => _repositoryService.ResetChanges(items.Cast<PendingChangeViewModel>().Select(vm => vm.Status.FilePath)),
+                items => items != null && items.Count > 0
             );
 
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
             // we are not calling Dispose on this object. This is because ToolWindowPane calls Dispose on 
             // the object returned by the Content property.
             base.Content = new PendingChangesControl { DataContext = this };
-        }
-
-        private void ViewDifferences(IList pendingChangeViewModels)
-        {
-            var command = new Diff
-            {
-                ViewInTool = true, 
-                FilePath = pendingChangeViewModels.Cast<PendingChangeViewModel>().Single().PathInRepository
-            };
-
-            _repositoryService.Git.ExecuteAsync(command);
-        }
-
-        private void ResetChanges(IList pendingChangeViewModels)
-        {
-            var command = new Checkout
-            {
-                FilePaths = pendingChangeViewModels.Cast<PendingChangeViewModel>().Select(vm => vm.PathInRepository)
-            };
-
-            _repositoryService.Git.Execute(command);
         }
 
         public override void OnToolWindowCreated()

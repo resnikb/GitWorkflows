@@ -132,6 +132,27 @@ namespace GitWorkflows.Git
             OnRepositoryChanged(null);
         }
 
+        public void ResetChanges(IEnumerable<Path> files)
+        {
+            var command = new Checkout
+            {
+                FilePaths = files.Select(path => path.GetRelativeTo(BaseDirectory).ActualPath)
+            };
+
+            Git.Execute(command);
+        }
+
+        public void DisplayUnstagedChangesAsync(Path file)
+        {
+            var command = new Diff
+            {
+                ViewInTool = true, 
+                FilePath = file.GetRelativeTo(BaseDirectory).ActualPath
+            };
+
+            Git.ExecuteAsync(command);
+        }
+
         private void DisposeWorkingTree()
         {
             if (_repositoryMonitor != null)
