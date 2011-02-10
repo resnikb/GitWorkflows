@@ -124,7 +124,7 @@ namespace GitWorkflows.Common
 
             var path = string.Join(
                 System.IO.Path.DirectorySeparatorChar.ToString(), 
-                Enumerable.Repeat("..", otherComponents.Length-i).Concat(components.Skip(i))
+                Enumerable.Repeat("..", otherComponents.Length-i).Concat(GetActualComponents().Skip(i))
             );
             return new Path(path.Length == 0 ? "." : path);
         }
@@ -140,13 +140,16 @@ namespace GitWorkflows.Common
 
             var path = string.Join(
                 System.IO.Path.DirectorySeparatorChar.ToString(), 
-                components.Take(i)
+                GetActualComponents().Take(i)
             );
             return path.Length > 0 ? new Path(path) : null;
         }
 
         public string[] GetCanonicalComponents()
         { return CanonicalPath.Split(System.IO.Path.DirectorySeparatorChar); }
+
+        public string[] GetActualComponents()
+        { return ActualPath.Split(System.IO.Path.DirectorySeparatorChar); }
 
         public bool IsParentOf(Path path)
         { return GetCommonPrefix(path) == this; }
