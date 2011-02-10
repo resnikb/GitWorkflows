@@ -192,8 +192,8 @@ namespace GitWorkflows.Package
 
         private static ImageSource CreateIcon(string path)
         {
-            var shinfo = new SHFILEINFO();
-            SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), SHGFI_ICON | SHGFI_SMALLICON);
+            var shinfo = new PInvoke.SHFILEINFO();
+            PInvoke.SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), PInvoke.SHGFI_ICON | PInvoke.SHGFI_SMALLICON);
 
             var iconHandle = shinfo.hIcon;
             if (IntPtr.Zero == iconHandle)
@@ -209,32 +209,8 @@ namespace GitWorkflows.Package
             }
             finally
             {
-                DestroyIcon(iconHandle);
+                PInvoke.DestroyIcon(iconHandle);
             }
         }
-
-        private const uint SHGFI_ICON = 0x100;
-        private const uint SHGFI_LARGEICON = 0x0; // 'Large icon
-        private const uint SHGFI_SMALLICON = 0x1; // 'Small icon
-
-        [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Auto)]
-        public struct SHFILEINFO
-        {
-             public IntPtr hIcon;
-             public int iIcon;
-             public uint dwAttributes;
-
-             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
-             public string szDisplayName;
-
-             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 80)]
-             public string szTypeName;
-        };
-
-        [DllImport("shell32.dll", CharSet=CharSet.Auto)]
-        private static extern IntPtr SHGetFileInfo(string pszPath, uint dwFileAttributes, ref SHFILEINFO psfi, uint cbFileInfo, uint uFlags);
-
-        [DllImport("User32.dll")]
-        public static extern int DestroyIcon(IntPtr hIcon);
     }
 }

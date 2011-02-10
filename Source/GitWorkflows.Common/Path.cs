@@ -287,26 +287,12 @@ namespace GitWorkflows.Common
                 return normalizedPath;
 
             var sb = new StringBuilder(Math.Max(1024, 2*normalizedPath.Length));
-            var shortNameLength = GetShortPathName(normalizedPath, sb, (uint)sb.Capacity);
-            var longNameLength = GetLongPathName(sb.ToString(0, (int)shortNameLength), sb, (uint)sb.Capacity);
+            var shortNameLength = PInvoke.GetShortPathName(normalizedPath, sb, (uint)sb.Capacity);
+            var longNameLength = PInvoke.GetLongPathName(sb.ToString(0, (int)shortNameLength), sb, (uint)sb.Capacity);
             return sb.ToString(0, (int)longNameLength);
         }
 
         private static string GetCanonicalPath(string relativeOrAbsolute)
         { return GetActualPath(relativeOrAbsolute).ToLowerInvariant(); }
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError=true)]
-        static extern uint GetShortPathName(
-           [MarshalAs(UnmanagedType.LPTStr)] string lpszLongPath,
-           [MarshalAs(UnmanagedType.LPTStr)] StringBuilder lpszShortPath,
-           uint cchBuffer
-        );
-
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern uint GetLongPathName(
-            [MarshalAs(UnmanagedType.LPTStr)] string lpszShortPath,
-            [MarshalAs(UnmanagedType.LPTStr)] StringBuilder lpszLongPath,
-            uint cchBuffer
-        );
     }
 }

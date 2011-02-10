@@ -1,8 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Media;
+using GitWorkflows.Common;
 
 namespace GitWorkflows.Controls
 {
@@ -10,9 +10,7 @@ namespace GitWorkflows.Controls
     {
         public static IEnumerable<DependencyObject> GetVisualAncestors(this DependencyObject obj)
         {
-            if (obj == null)
-                throw new ArgumentNullException("obj");
-
+            Arguments.EnsureNotNull(new{ obj });
             return GetVisualAncestorsImpl(obj);
         }
 
@@ -21,9 +19,7 @@ namespace GitWorkflows.Controls
 
         public static IEnumerable<DependencyObject> GetVisualDescendants(this DependencyObject obj)
         {
-            if (obj == null)
-                throw new ArgumentNullException("obj");
-
+            Arguments.EnsureNotNull(new{ obj });
             return GetVisualDescendantsImpl(obj);
         }
 
