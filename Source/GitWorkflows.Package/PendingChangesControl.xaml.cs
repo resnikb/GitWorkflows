@@ -1,4 +1,5 @@
-﻿using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
 
 namespace GitWorkflows.Package
 {
@@ -14,6 +15,17 @@ namespace GitWorkflows.Package
         {
             var vm = (PendingChangesWindow)DataContext;
             vm.SelectionChanged(ChangeList.SelectedItems);
+        }
+
+        private void ChangeList_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            var item = ((FrameworkElement)e.OriginalSource).DataContext as PendingChangeViewModel;
+            if (item != null)
+            {
+                var vm = (PendingChangesWindow)DataContext;
+                if (vm.CommandViewDifferences.CanExecute(null))
+                    vm.CommandViewDifferences.Execute(null);
+            }
         }
     }
 }
