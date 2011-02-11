@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -36,13 +37,15 @@ namespace GitWorkflows.Package
         public ObservableCollection<PendingChangeViewModel> Changes
         { get; private set; }
 
+        private readonly List<PendingChangeViewModel> _selectedItems = new List<PendingChangeViewModel>();
+
         public string CommitMessage
         { get; set; }
 
-        public DelegateCommand<IList> CommandViewDifferences
+        public DelegateCommand<object> CommandViewDifferences
         { get; private set; }
 
-        public DelegateCommand<IList> CommandResetChanges
+        public DelegateCommand<object> CommandResetChanges
         { get; private set; }
 
         /// <summary>
@@ -64,14 +67,14 @@ namespace GitWorkflows.Package
 
             Changes = new ObservableCollection<PendingChangeViewModel>();
 
-            CommandViewDifferences = new DelegateCommand<IList>(
-                items => _repositoryService.DisplayUnstagedChangesAsync(items.Cast<PendingChangeViewModel>().Single().Status.FilePath),
-                items => items != null && items.Count == 1 && (((PendingChangeViewModel)items[0]).Status.FileStatus & FileStatus.Modified) != 0
+            CommandViewDifferences = new DelegateCommand<object>(
+                _ => _repositoryService.DisplayUnstagedChangesAsync(_selectedItems.Single().Status.FilePath),
+                _ => _selectedItems.Count == 1 && (_selectedItems[0].Status.FileStatus & FileStatus.Modified) != 0
             );
 
-            CommandResetChanges = new DelegateCommand<IList>(
-                items => _repositoryService.ResetChanges(items.Cast<PendingChangeViewModel>().Select(vm => vm.Status.FilePath)),
-                items => items != null && items.Count > 0
+            CommandResetChanges = new DelegateCommand<object>(
+                _ => _repositoryService.ResetChanges(_selectedItems.Select(vm => vm.Status.FilePath)),
+                _ => _selectedItems.Count > 0
             );
 
             // This is the user control hosted by the tool window; Note that, even if this class implements IDisposable,
@@ -105,8 +108,15 @@ namespace GitWorkflows.Package
                 .ForEach(Changes.Add);
         }
 
-        public void SelectionChanged()
+        public void SelectionChanged(IList selectedItems)
         {
+            _selectedItems.Clear();
+            if (selectedItems != null)
+            {
+                _selectedItems.Capacity = Math.Max(_selectedItems.Capacity, selectedItems.Count);
+                _selectedItems.AddRange(selectedItems.Cast<PendingChangeViewModel>());
+            }
+
             CommandViewDifferences.RaiseCanExecuteChanged();
             CommandResetChanges.RaiseCanExecuteChanged();
         }

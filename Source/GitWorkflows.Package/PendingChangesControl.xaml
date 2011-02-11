@@ -15,9 +15,9 @@
         </Grid.ColumnDefinitions>
         
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="1*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="2*"/>
         </Grid.RowDefinitions>
 
     	<DockPanel Grid.Row="0" Background="{Binding Background, ElementName=RootControl}">
@@ -42,7 +42,7 @@
     	              VerticalAlignment="Stretch"
     	              Margin="0" />
             
-        <ListView Grid.Row="2" ItemsSource="{Binding Changes}" x:Name="ChangeList" SelectionChanged="ChangeList_SelectionChanged" MouseRightButtonDown="ChangeList_MouseRightButtonDown">
+        <ListView Grid.Row="2" ItemsSource="{Binding Changes}" x:Name="ChangeList" SelectionChanged="ChangeList_SelectionChanged">
             <ListView.Resources>
                 <Style TargetType="{x:Type TextBlock}" x:Key="ChangeTextStyle">
                     <Setter Property="Foreground" Value="{Binding DataContext.StatusColor, RelativeSource={RelativeSource AncestorType={x:Type ListViewItem}}}"/>
@@ -53,8 +53,8 @@
 
             <ListView.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="View differences..." Command="{Binding CommandViewDifferences}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"/>
-                    <MenuItem Header="Reset all changes" Command="{Binding CommandResetChanges}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"/>
+                    <MenuItem Header="View differences..." Command="{Binding CommandViewDifferences}"/>
+                    <MenuItem Header="Reset all changes" Command="{Binding CommandResetChanges}"/>
                 </ContextMenu>    
             </ListView.ContextMenu>
             

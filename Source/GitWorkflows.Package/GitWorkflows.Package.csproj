@@ -146,9 +146,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SourceControlProvider.cs" />
     <Compile Include="Implementations\CommandService.cs" />
-    <Compile Include="Implementations\DialogService.cs" />
+    <Compile Include="Implementations\ViewService.cs" />
     <Compile Include="Interfaces\ICommandService.cs" />
-    <Compile Include="Interfaces\IDialogService.cs" />
     <Compile Include="VisualStudio\MenuCommand.cs" />
   </ItemGroup>
   <ItemGroup>

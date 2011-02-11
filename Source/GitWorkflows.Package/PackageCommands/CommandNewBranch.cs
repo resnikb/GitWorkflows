@@ -5,7 +5,6 @@ using GitWorkflows.Controls.ViewModels;
 using GitWorkflows.Package.VisualStudio;
 using GitWorkflows.Services;
 using Microsoft.VisualStudio.Shell;
-using IDialogService = GitWorkflows.Package.Interfaces.IDialogService;
 
 namespace GitWorkflows.Package.PackageCommands
 {
@@ -16,7 +15,7 @@ namespace GitWorkflows.Package.PackageCommands
         private IBranchManager _branchManager;
 
         [Import]
-        private IDialogService _dialogService;
+        private IViewService _viewService;
 
         private volatile bool _isEnabled;
 
@@ -26,15 +25,13 @@ namespace GitWorkflows.Package.PackageCommands
 
         protected override void Execute(object sender, OleMenuCmdEventArgs e)
         {
-            var data = new NewBranchViewModel(_branchManager.CurrentBranch.Name)
-            {
-                NewBranchName = e.InValue as string
-            };
-
-            if (_dialogService.ShowDialog(data) != true)
-                return;
-
-            _branchManager.Create(data.NewBranchName, data.CheckoutAfterCreating);
+            _viewService.ShowDialog(
+                new NewBranchViewModel(_branchManager.CurrentBranch.Name)
+                {
+                    NewBranchName = e.InValue as string
+                },
+                onSuccess: vm => _branchManager.Create(vm.NewBranchName, vm.CheckoutAfterCreating)
+            );
         }
 
         protected override void DoUpdateStatus(object sender, EventArgs e)

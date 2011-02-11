@@ -1,11 +1,12 @@
 using System;
+using System.Windows.Controls;
 
 namespace GitWorkflows.Services
 {
     /// <summary>
     /// Represents a service for displaying dialogs.
     /// </summary>
-    public interface IDialogService
+    public interface IViewService
     {
         /// <summary>
         /// Shows dialog with the given view model as the data context.
@@ -42,5 +43,16 @@ namespace GitWorkflows.Services
             Action<TViewModel> onCancel         = null,
             Action<TViewModel, bool> afterClose = null
         );
+
+        /// <summary>
+        /// Creates view for the given view model.
+        /// </summary>
+        /// 
+        /// <typeparam name="TViewModel">The type of the view model.</typeparam>
+        /// 
+        /// <param name="viewModel">The view model.</param>
+        /// 
+        /// <returns>Control bound to the given view model.</returns>
+        Control CreateView<TViewModel>(TViewModel viewModel);
     }
 }
