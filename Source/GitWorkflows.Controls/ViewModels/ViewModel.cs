@@ -1,23 +1,12 @@
-using System;
-using System.Windows;
-using System.Windows.Threading;
 using GitWorkflows.Common;
 
 namespace GitWorkflows.Controls.ViewModels
 {
     public abstract class ViewModel : NotifyPropertyChanged
     {
-        private static readonly Dispatcher _dispatcher = Application.Current.Dispatcher;
-
-        public static void ExecuteOnDispatcher(Action action)
-        {
-            if (_dispatcher.CheckAccess())
-                action();
-            else
-                _dispatcher.BeginInvoke(action);
-        }
-
-        protected override void ExecuteAction(Action action)
-        { ExecuteOnDispatcher(action); }
+#pragma warning disable 1911
+        protected override void RaisePropertyChanged(string propertyName)
+        { UIDispatcher.Schedule(() => base.RaisePropertyChanged(propertyName)); }
+#pragma warning restore 1911
     }
 }

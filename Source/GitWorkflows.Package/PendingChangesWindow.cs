@@ -92,7 +92,7 @@ namespace GitWorkflows.Package
             _repositoryService.PropertyChanged += (sender, e) =>
             {
                 if (e.PropertyName == "Status")
-                    ViewModel.ExecuteOnDispatcher(() => Refresh(_repositoryService));
+                    UIDispatcher.Schedule(() => Refresh(_repositoryService));
             };
 
             // Refresh now, to initialize with any changes
