@@ -57,6 +57,10 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Events\GitBranchCollectionChangedEvent.cs" />
+    <Compile Include="Events\GitCurrentBranchChangedEvent.cs" />
+    <Compile Include="Events\GitRepositoryChangedEvent.cs" />
+    <Compile Include="Events\GitWorkingTreeChangedEvent.cs" />
     <Compile Include="ExportViewAttribute.cs" />
     <Compile Include="IBranchManager.cs" />
     <Compile Include="IViewMetadata.cs" />

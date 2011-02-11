@@ -4,18 +4,28 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using GitWorkflows.Common;
 using GitWorkflows.Git.Commands;
+using GitWorkflows.Services.Events;
 using NLog;
 using Branch = GitWorkflows.Git.Branch;
 
 namespace GitWorkflows.Services.Implementations
 {
     [Export(typeof(IBranchManager))]
-    class BranchManager : NotifyPropertyChanged, IBranchManager, IPartImportsSatisfiedNotification
+    class BranchManager : IBranchManager, IPartImportsSatisfiedNotification
     {
         private static readonly Logger Log = LogManager.GetLogger(typeof(BranchManager).FullName);
 
         [Import]
         private IRepositoryService _repositoryService;
+
+        [Import]
+        private GitRepositoryChangedEvent _repositoryChangedEvent;
+
+        [Import]
+        private GitBranchCollectionChangedEvent _branchCollectionChangedEvent;
+
+        [Import]
+        private GitCurrentBranchChangedEvent _currentBranchChangedEvent;
 
         private readonly CachedValue<Branch> _currentBranch;
         private readonly CachedValue<IEnumerable<Branch>> _branches;
@@ -81,20 +91,22 @@ namespace GitWorkflows.Services.Implementations
         /// </summary>
         public void OnImportsSatisfied()
         {
-            _repositoryService.RepositoryChanged += changedFiles =>
-            {
-                if (changedFiles == null || changedFiles.Any(_repositoryService.RepositoryDirectory.Combine("refs", "heads").IsParentOf))
+            _repositoryChangedEvent.Subscribe( 
+                changedFiles =>
                 {
-                    _branches.Invalidate();
-                    RaisePropertyChanged(() => Branches);
-                }
+                    if (changedFiles == null || changedFiles.Any(_repositoryService.RepositoryDirectory.Combine("refs", "heads").IsParentOf))
+                    {
+                        _branches.Invalidate();
+                        _branchCollectionChangedEvent.Publish(this);
+                    }
 
-                if (changedFiles == null || changedFiles.Contains(_repositoryService.RepositoryDirectory.Combine("HEAD")))
-                {
-                    _currentBranch.Invalidate();
-                    RaisePropertyChanged(() => CurrentBranch);
+                    if (changedFiles == null || changedFiles.Contains(_repositoryService.RepositoryDirectory.Combine("HEAD")))
+                    {
+                        _currentBranch.Invalidate();
+                        _currentBranchChangedEvent.Publish(this);
+                    }
                 }
-            };
+            );
         }
 
         #endregion

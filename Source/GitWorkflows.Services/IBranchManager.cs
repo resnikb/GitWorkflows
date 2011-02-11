@@ -1,10 +1,9 @@
 using System.Collections.Generic;
-using System.ComponentModel;
 using GitWorkflows.Git;
 
 namespace GitWorkflows.Services
 {
-    public interface IBranchManager : INotifyPropertyChanged
+    public interface IBranchManager
     {
         IEnumerable<Branch> Branches
         { get; }

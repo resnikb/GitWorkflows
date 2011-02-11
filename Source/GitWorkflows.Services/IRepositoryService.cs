@@ -1,15 +1,11 @@
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using GitWorkflows.Common;
 using GitWorkflows.Git;
 
 namespace GitWorkflows.Services
 {
-    public interface IRepositoryService : INotifyPropertyChanged
+    public interface IRepositoryService
     {
-        event Action<HashSet<Path>> RepositoryChanged;
-
         GitApplication Git
         { get; }
 

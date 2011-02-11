@@ -12,7 +12,9 @@ using GitWorkflows.Common;
 using GitWorkflows.Controls;
 using GitWorkflows.Git;
 using GitWorkflows.Services;
+using GitWorkflows.Services.Events;
 using Microsoft.Practices.Prism.Commands;
+using Microsoft.Practices.Prism.Events;
 using Microsoft.VisualStudio.Shell;
 using Brush = System.Windows.Media.Brush;
 using Brushes = System.Windows.Media.Brushes;
@@ -88,14 +90,12 @@ namespace GitWorkflows.Package
             base.OnToolWindowCreated();
             
             var package = (GitWorkflowsPackage)Package;
-            _repositoryService = package.PartContainer.GetExportedValue<IRepositoryService>();
-            _repositoryService.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName == "Status")
-                    UIDispatcher.Schedule(() => Refresh(_repositoryService));
-            };
+
+            var workingTreeChangedEvent = package.PartContainer.GetExportedValue<GitWorkingTreeChangedEvent>();
+            workingTreeChangedEvent.Subscribe(Refresh, ThreadOption.UIThread);
 
             // Refresh now, to initialize with any changes
+            _repositoryService = package.PartContainer.GetExportedValue<IRepositoryService>();
             Refresh(_repositoryService);
         }
 

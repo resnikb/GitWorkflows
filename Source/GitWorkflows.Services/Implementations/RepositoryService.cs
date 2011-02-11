@@ -5,30 +5,29 @@ using System.Linq;
 using GitWorkflows.Common;
 using GitWorkflows.Git;
 using GitWorkflows.Git.Commands;
+using GitWorkflows.Services.Events;
 using NLog;
 using Status = GitWorkflows.Git.Status;
 
 namespace GitWorkflows.Services.Implementations
 {
     [Export(typeof(IRepositoryService))]
-    public class RepositoryService : NotifyPropertyChanged, IRepositoryService, IDisposable
+    public class RepositoryService : IRepositoryService, IDisposable
     {
         private static readonly Logger Log = LogManager.GetLogger(typeof(RepositoryService).FullName);
-         
+        
+        [Import]
+        private GitRepositoryChangedEvent _repositoryChangedEvent;
+
+        [Import]
+        private GitWorkingTreeChangedEvent _workingTreeChangedEvent;
+
         private readonly CachedValue<StatusCollection> _status;
-        private GitApplication _git;
-        private bool _isGitRepository;
         private RepositoryMonitor _repositoryMonitor;
         private bool _disposed;
-        private Path _repositoryDirectory;
-
-        public event Action<HashSet<Path>> RepositoryChanged;
 
         public GitApplication Git
-        {
-            get { return _git; }
-            private set { SetProperty(ref _git, value, () => Git); }
-        }
+        { get; private set; }
 
         public StatusCollection Status
         {
@@ -36,10 +35,7 @@ namespace GitWorkflows.Services.Implementations
         }
 
         public bool IsGitRepository
-        {
-            get { return _isGitRepository; }
-            private set { SetProperty(ref _isGitRepository, value, () => IsGitRepository); }
-        }
+        { get; private set; }
 
         public Path BaseDirectory
         {
@@ -47,10 +43,7 @@ namespace GitWorkflows.Services.Implementations
         }
 
         public Path RepositoryDirectory
-        {
-            get { return _repositoryDirectory; }
-            private set { SetProperty(ref _repositoryDirectory, value, () => RepositoryDirectory); }
-        }
+        { get; private set; }
 
         public RepositoryService()
         {
@@ -99,7 +92,6 @@ namespace GitWorkflows.Services.Implementations
         public void OpenRepositoryAt(Path path)
         {
             DisposeWorkingTree();
-            _status.Invalidate();
 
             var repositoryRoot = FindTopLevelDirectory(path);
 
@@ -118,8 +110,6 @@ namespace GitWorkflows.Services.Implementations
                 _repositoryMonitor.WorkingTreeChanged += OnWorkingTreeChanged;
             }
 
-            RaisePropertyChanged(() => Status);
-            
             // Notify everyone that the repository has changed
             OnRepositoryChanged(null);
         }
@@ -127,10 +117,8 @@ namespace GitWorkflows.Services.Implementations
         public void CloseRepository()
         {
             DisposeWorkingTree();
-            _status.Invalidate();
             Git = new GitApplication(null);
             IsGitRepository = false;
-            RaisePropertyChanged(() => Status);
             OnRepositoryChanged(null);
         }
 
@@ -181,16 +169,13 @@ namespace GitWorkflows.Services.Implementations
                 }
 
                 _status.Invalidate();
-                RaisePropertyChanged(() => Status);
+                _workingTreeChangedEvent.Publish(this);
             }
         }
 
         private void OnRepositoryChanged(HashSet<Path> hashSet)
         {
-            var handler = RepositoryChanged;
-            if (handler != null) 
-                handler(hashSet);
-
+            _repositoryChangedEvent.Publish(hashSet);
             OnWorkingTreeChanged(hashSet);
         }
 

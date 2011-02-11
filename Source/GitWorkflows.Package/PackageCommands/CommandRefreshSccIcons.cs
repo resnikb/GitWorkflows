@@ -2,6 +2,7 @@ using System.ComponentModel.Composition;
 using GitWorkflows.Package.Interfaces;
 using GitWorkflows.Package.VisualStudio;
 using GitWorkflows.Services;
+using GitWorkflows.Services.Events;
 using Microsoft.VisualStudio.Shell;
 
 namespace GitWorkflows.Package.PackageCommands
@@ -16,7 +17,7 @@ namespace GitWorkflows.Package.PackageCommands
         private ISolutionService _solutionService;
 
         [Import]
-        private IRepositoryService _repositoryService;
+        private GitWorkingTreeChangedEvent _workingTreeChangedEvent;
 
         public CommandRefreshSccIcons() 
             : base(Constants.guidPackageCmdSet, Constants.cmdidRefreshSccIcons)
@@ -32,11 +33,7 @@ namespace GitWorkflows.Package.PackageCommands
             _sourceControlProvider.Activated += (sender, e) => PostExec();
             _sourceControlProvider.Deactivated += (sender, e) => PostExec();
 
-            _repositoryService.PropertyChanged += (sender, e) =>
-            {
-                if (e.PropertyName == "Status")
-                    PostExec();
-            };
+            _workingTreeChangedEvent.Subscribe(_ => PostExec());
         }
     }
 }
