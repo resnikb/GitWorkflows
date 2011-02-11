@@ -35,7 +35,7 @@ namespace GitWorkflows.Services
         /// 
         ///     <para>This method does not have to display a modal dialog. It is up to the service
         ///     to determine the best way to display the dialog, taking into account the style of
-        ///     the application and possibly other environment considerations. For example, it might </para>
+        ///     the application and possibly other environment considerations.</para>
         /// </remarks>
         void ShowDialog<TViewModel>(
             TViewModel viewModel, 
