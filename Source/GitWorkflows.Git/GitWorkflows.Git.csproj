@@ -72,7 +72,6 @@
     <Compile Include="Commands\SymbolicRef.cs" />
     <Compile Include="GitApplication.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RepositoryMonitor.cs" />
     <Compile Include="Status.cs" />
     <Compile Include="StatusCollection.cs" />
   </ItemGroup>

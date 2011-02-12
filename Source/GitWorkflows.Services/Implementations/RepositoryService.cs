@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Linq;
 using GitWorkflows.Common;
 using GitWorkflows.Git;
 using GitWorkflows.Git.Commands;
 using GitWorkflows.Services.Events;
 using NLog;
+using Path = GitWorkflows.Common.Path;
 using Status = GitWorkflows.Git.Status;
 
 namespace GitWorkflows.Services.Implementations
@@ -16,14 +18,11 @@ namespace GitWorkflows.Services.Implementations
     {
         private static readonly Logger Log = LogManager.GetLogger(typeof(RepositoryService).FullName);
         
-        [Import]
-        private GitRepositoryChangedEvent _repositoryChangedEvent;
-
-        [Import]
-        private GitWorkingTreeChangedEvent _workingTreeChangedEvent;
-
+        private readonly GitRepositoryChangedEvent _repositoryChangedEvent;
+        private readonly GitWorkingTreeChangedEvent _workingTreeChangedEvent;
         private readonly CachedValue<StatusCollection> _status;
-        private RepositoryMonitor _repositoryMonitor;
+        private FileSystemWatcher _watcher;
+        private IDisposable _subscription;
         private bool _disposed;
 
         public GitApplication Git
@@ -45,8 +44,14 @@ namespace GitWorkflows.Services.Implementations
         public Path RepositoryDirectory
         { get; private set; }
 
-        public RepositoryService()
+        [ImportingConstructor]
+        public RepositoryService(
+            GitRepositoryChangedEvent repositoryChangedEvent, 
+            GitWorkingTreeChangedEvent workingTreeChangedEvent
+        )
         {
+            _repositoryChangedEvent = repositoryChangedEvent;
+            _workingTreeChangedEvent = workingTreeChangedEvent;
             _status = new CachedValue<StatusCollection>(
                 () =>
                 {
@@ -66,7 +71,7 @@ namespace GitWorkflows.Services.Implementations
                         statusResult.Concat(cleanResult.Select(name => new Status(System.IO.Path.Combine(BaseDirectory, name), FileStatus.Ignored)))
                     );
                 }
-            );    
+            );
         }
 
         ~RepositoryService()
@@ -84,14 +89,14 @@ namespace GitWorkflows.Services.Implementations
                 return;
 
             if (disposing)
-                DisposeWorkingTree();
+                DisposeWatcher();
 
             _disposed = true;
         }
 
         public void OpenRepositoryAt(Path path)
         {
-            DisposeWorkingTree();
+            DisposeWatcher();
 
             var repositoryRoot = FindTopLevelDirectory(path);
 
@@ -104,19 +109,51 @@ namespace GitWorkflows.Services.Implementations
             else
             {
                 Log.Debug("Found Git repository at {0}", repositoryRoot);
-
-                _repositoryMonitor = new RepositoryMonitor(repositoryRoot);
-                _repositoryMonitor.RepositoryChanged += OnRepositoryChanged;
-                _repositoryMonitor.WorkingTreeChanged += OnWorkingTreeChanged;
+                CreateFileWatcher();
             }
 
             // Notify everyone that the repository has changed
             OnRepositoryChanged(null);
         }
 
+        private void CreateFileWatcher()
+        {
+            _watcher = new FileSystemWatcher
+            {
+                Path = BaseDirectory,
+                IncludeSubdirectories = true,
+                NotifyFilter = NotifyFilters.Size | NotifyFilters.FileName | NotifyFilters.LastWrite,
+            };
+
+            var changeEvents = Observable.FromEvent<FileSystemEventArgs>(e => _watcher.Changed += new FileSystemEventHandler(e), e => _watcher.Changed -= new FileSystemEventHandler(e));
+            var createEvents = Observable.FromEvent<FileSystemEventArgs>(e => _watcher.Created += new FileSystemEventHandler(e), e => _watcher.Created -= new FileSystemEventHandler(e));
+            var deleteEvents = Observable.FromEvent<FileSystemEventArgs>(e => _watcher.Deleted += new FileSystemEventHandler(e), e => _watcher.Deleted -= new FileSystemEventHandler(e));
+            var renameEvents = Observable.FromEvent<FileSystemEventArgs>(e => _watcher.Renamed += new RenamedEventHandler(e), e => _watcher.Renamed -= new RenamedEventHandler(e));
+
+            _subscription = Observable.Merge(changeEvents, createEvents, deleteEvents, renameEvents) 
+                .Select(e => e.EventArgs.FullPath)
+                .BufferWithTime(TimeSpan.FromSeconds(1))
+                .Subscribe(
+                    changes =>
+                    {
+                        var changeList = new List<string>(256);
+                        changes.Subscribe(
+                            changeList.Add, 
+                            () => 
+                            {
+                                if (changeList.Count > 0)
+                                    OnChangesDetected(changeList);
+                            }
+                        );
+                    }
+                );
+
+            _watcher.EnableRaisingEvents = true;
+        }
+
         public void CloseRepository()
         {
-            DisposeWorkingTree();
+            DisposeWatcher();
             Git = new GitApplication(null);
             IsGitRepository = false;
             OnRepositoryChanged(null);
@@ -143,13 +180,41 @@ namespace GitWorkflows.Services.Implementations
             Git.ExecuteAsync(command);
         }
 
-        private void DisposeWorkingTree()
+        private void DisposeWatcher()
         {
-            if (_repositoryMonitor != null)
+            if (_watcher != null)
             {
-                _repositoryMonitor.Dispose();
-                _repositoryMonitor = null;
+                using (_watcher)
+                using (_subscription)
+                {
+                    _watcher.EnableRaisingEvents = false;
+                }
+
+                _watcher = null;
             }
+        }
+
+        private void OnChangesDetected(IEnumerable<string> changes)
+        {
+            var repositoryChanges = new HashSet<Path>();
+            var treeChanges = new HashSet<Path>();
+
+            foreach (Path path in changes)
+            {
+                if (path.IsDirectory)
+                    continue;
+
+                if (!RepositoryDirectory.IsParentOf(path))
+                    treeChanges.Add(path);
+                else if (!path.HasExtension || path.Extension.ToLowerInvariant() != ".lock")
+                    repositoryChanges.Add(path);
+            }
+
+            if (repositoryChanges.Count > 0)
+                OnRepositoryChanged(repositoryChanges);
+
+            if (treeChanges.Count > 0)
+                OnWorkingTreeChanged(treeChanges);
         }
 
         private void OnWorkingTreeChanged(HashSet<Path> obj)
@@ -176,7 +241,7 @@ namespace GitWorkflows.Services.Implementations
         private void OnRepositoryChanged(HashSet<Path> hashSet)
         {
             _repositoryChangedEvent.Publish(hashSet);
-            OnWorkingTreeChanged(hashSet);
+            OnWorkingTreeChanged(null);
         }
 
         private Path FindTopLevelDirectory(string directory)
