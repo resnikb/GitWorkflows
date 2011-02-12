@@ -53,7 +53,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CachedValue.cs" />
-    <Compile Include="NotifyPropertyChanged.cs" />
     <Compile Include="PInvoke.cs" />
     <Compile Include="ServiceNotFoundException.cs" />
     <Compile Include="Arguments.cs" />
