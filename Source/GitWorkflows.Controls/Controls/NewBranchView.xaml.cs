@@ -4,13 +4,13 @@ using GitWorkflows.Services;
 namespace GitWorkflows.Controls.Dialogs
 {
     /// <summary>
-    /// Interaction logic for NewBranchDialog.xaml
+    /// Interaction logic for NewBranchView.xaml
     /// </summary>
     [ExportView("NewBranchViewModel", WindowTitle = "Git Workflows: Create Branch")]
     [PartCreationPolicy(CreationPolicy.NonShared)]
-    public partial class NewBranchDialog
+    public partial class NewBranchView
     {
-        public NewBranchDialog()
+        public NewBranchView()
         { InitializeComponent(); }
     }
 }
