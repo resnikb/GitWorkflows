@@ -65,6 +65,7 @@
     <Compile Include="Controls\NewBranchView.xaml.cs">
       <DependentUpon>NewBranchView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ViewModelAttributes.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
