@@ -1,10 +1,4 @@
-using System;
-using System.Runtime.InteropServices;
-using System.Windows;
-using System.Windows.Interop;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using GitWorkflows.Common;
 using GitWorkflows.Git;
 using GitWorkflows.Services;
 
@@ -39,7 +33,7 @@ namespace GitWorkflows.Controls.ViewModels
         public Status Status
         { get; private set; }
 
-        public StatusViewModel(IRepositoryService repositoryService, Status status)
+        public StatusViewModel(IRepositoryService repositoryService, IFileIconService iconService, Status status)
         {
             Status = status;
             PathInRepository = status.FilePath.GetRelativeTo(repositoryService.BaseDirectory);
@@ -57,30 +51,7 @@ namespace GitWorkflows.Controls.ViewModels
             else
                 StatusColor = _brushDefault;
 
-            Icon = CreateIcon(status.FilePath);
-        }
-        
-        private static ImageSource CreateIcon(string path)
-        {
-            var shinfo = new PInvoke.SHFILEINFO();
-            PInvoke.SHGetFileInfo(path, 0, ref shinfo, (uint)Marshal.SizeOf(shinfo), PInvoke.SHGFI_ICON | PInvoke.SHGFI_SMALLICON);
-
-            var iconHandle = shinfo.hIcon;
-            if (IntPtr.Zero == iconHandle)
-                return null;
-
-            try
-            {
-                return Imaging.CreateBitmapSourceFromHIcon(
-                    iconHandle,
-                    Int32Rect.Empty,
-                    BitmapSizeOptions.FromEmptyOptions()
-                );
-            }
-            finally
-            {
-                PInvoke.DestroyIcon(iconHandle);
-            }
+            Icon = iconService.GetIcon(status.FilePath);
         }
     }
 }

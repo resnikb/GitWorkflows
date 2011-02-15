@@ -18,15 +18,21 @@ namespace GitWorkflows.Controls.ViewModels
     public class PendingChangesViewModel : ViewModel
     {
         private readonly IRepositoryService _repositoryService;
+        private readonly IFileIconService _iconService;
         private readonly List<StatusViewModel> _selectedItems = new List<StatusViewModel>();
 
         public ObservableCollection<StatusViewModel> Changes
         { get; private set; }
 
         [ImportingConstructor]
-        public PendingChangesViewModel(IRepositoryService repositoryService, GitWorkingTreeChangedEvent workingTreeChangedEvent)
+        public PendingChangesViewModel(
+            IRepositoryService repositoryService, 
+            IFileIconService iconService,
+            GitWorkingTreeChangedEvent workingTreeChangedEvent
+        )
         {
             _repositoryService = repositoryService;
+            _iconService = iconService;
             Changes = new ObservableCollection<StatusViewModel>();
                 
             workingTreeChangedEvent.Subscribe(Refresh, ThreadOption.UIThread);
@@ -38,7 +44,7 @@ namespace GitWorkflows.Controls.ViewModels
             Changes.Clear();
             repositoryService.Status.Statuses
                 .Where(s => (s.FileStatus & FileStatus.Ignored) == 0)
-                .Select(s => new StatusViewModel(repositoryService, s))
+                .Select(s => new StatusViewModel(repositoryService, _iconService, s))
                 .ForEach(Changes.Add);
         }
 

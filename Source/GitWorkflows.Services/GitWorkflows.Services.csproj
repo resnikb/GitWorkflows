@@ -65,6 +65,8 @@
     <Compile Include="Events\GitWorkingTreeChangedEvent.cs" />
     <Compile Include="ExportViewAttribute.cs" />
     <Compile Include="IBranchManager.cs" />
+    <Compile Include="IFileIconService.cs" />
+    <Compile Include="Implementations\FileIconService.cs" />
     <Compile Include="IViewMetadata.cs" />
     <Compile Include="IViewService.cs" />
     <Compile Include="Implementations\BranchManager.cs" />
