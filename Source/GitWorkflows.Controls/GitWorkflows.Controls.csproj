@@ -63,6 +63,9 @@
     <Compile Include="AttachedProperties\TextBoxService.cs" />
     <Compile Include="Commands\SelectionChanged.cs" />
     <Compile Include="Commands\SelectorSelectionChangedCommandBehavior.cs" />
+    <Compile Include="Controls\PendingChangesControl.xaml.cs">
+      <DependentUpon>PendingChangesControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="DependencyObjectExtensions.cs" />
     <Compile Include="Controls\NewBranchView.xaml.cs">
       <DependentUpon>NewBranchView.xaml</DependentUpon>
@@ -83,6 +86,8 @@
     </Compile>
     <Compile Include="UIDispatcher.cs" />
     <Compile Include="ViewModels\NewBranchViewModel.cs" />
+    <Compile Include="ViewModels\PendingChangesViewModel.cs" />
+    <Compile Include="ViewModels\StatusViewModel.cs" />
     <Compile Include="ViewModels\ViewModel.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -104,17 +109,26 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Controls\PendingChangesControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GitWorkflows.Common\GitWorkflows.Common.csproj">
       <Project>{D9BD73D9-942C-4263-A698-8B03B854DB0E}</Project>
       <Name>GitWorkflows.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\GitWorkflows.Git\GitWorkflows.Git.csproj">
+      <Project>{93E73497-98FA-4005-8541-98D2188A8CC4}</Project>
+      <Name>GitWorkflows.Git</Name>
+    </ProjectReference>
     <ProjectReference Include="..\GitWorkflows.Services\GitWorkflows.Services.csproj">
       <Project>{01D52E44-1B0F-4B5E-AE39-A4B0C3C4D8E1}</Project>
       <Name>GitWorkflows.Services</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
