@@ -61,6 +61,8 @@
   <ItemGroup>
     <Compile Include="AttachedProperties\ButtonService.cs" />
     <Compile Include="AttachedProperties\TextBoxService.cs" />
+    <Compile Include="Commands\SelectionChanged.cs" />
+    <Compile Include="Commands\SelectorSelectionChangedCommandBehavior.cs" />
     <Compile Include="DependencyObjectExtensions.cs" />
     <Compile Include="Controls\NewBranchView.xaml.cs">
       <DependentUpon>NewBranchView.xaml</DependentUpon>
