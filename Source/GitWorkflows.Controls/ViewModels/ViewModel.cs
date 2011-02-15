@@ -1,34 +1,45 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+using Microsoft.Practices.Prism.Commands;
 using Microsoft.Practices.Prism.ViewModel;
 
 namespace GitWorkflows.Controls.ViewModels
 {
-    public abstract class ViewModel : NotificationObject
+    public abstract class ViewModel : NotificationObject, IDynamicMetaObjectProvider
     {
         private sealed class Metadata
         {
-            public Dictionary<string, string[]> Dependencies;
+            public Dictionary<string, CommandFactory> CommandFactories;
         }
 
         private static readonly ConcurrentDictionary<Type, Metadata> _cachedMetadata = new ConcurrentDictionary<Type, Metadata>();
-
         private readonly ConcurrentDictionary<string, object> _backingVariables = new ConcurrentDictionary<string, object>();
-        private readonly Metadata _metadata;
 
         protected ViewModel()
         {
-            _metadata = _cachedMetadata.GetOrAdd(GetType(), CreateMetadata);
+            var metadata = _cachedMetadata.GetOrAdd(GetType(), CreateMetadata);
+            CreateCommands(metadata);
+        }
+
+        private void CreateCommands(Metadata metadata)
+        {
+            foreach (var pair in metadata.CommandFactories)
+                _backingVariables.TryAdd(pair.Key, pair.Value.Create(this));
         }
 
         protected T GetProperty<T>(Expression<Func<T>> expression, T defaultValue = default(T))
         {
             var propertyName = PropertySupport.ExtractPropertyName(expression);
-            return (T)_backingVariables.GetOrAdd(propertyName, defaultValue);    
+            return GetProperty(propertyName, defaultValue);    
         }
+
+        protected T GetProperty<T>(string name, T defaultValue = default(T))
+        { return (T)_backingVariables.GetOrAdd(name, defaultValue); }
 
         protected bool SetProperty<T>(Expression<Func<T>> expression, T newValue)
         {
@@ -55,82 +66,173 @@ namespace GitWorkflows.Controls.ViewModels
 
 #pragma warning disable 1911
         protected override void RaisePropertyChanged(string propertyName)
-        {
-            string[] dependencies;
-            if (!_metadata.Dependencies.TryGetValue(propertyName, out dependencies))
-            { 
-                UIDispatcher.Schedule(() => base.RaisePropertyChanged(propertyName));
-                return;
-            }
-
-            UIDispatcher.Schedule(
-                () =>
-                {
-                    base.RaisePropertyChanged(propertyName);
-                    foreach (var name in dependencies)
-                        base.RaisePropertyChanged(name);
-                }
-            );
-        }
+        { UIDispatcher.Schedule(() => base.RaisePropertyChanged(propertyName)); }
 #pragma warning restore 1911
 
         private static Metadata CreateMetadata(Type viewModelType)
         {
+            var methods = viewModelType.GetMethods();
+            var properties = viewModelType.GetProperties();
+
+            var executeData = from m in methods
+                              from attr in m.GetCustomAttributes(typeof(CommandExecuteAttribute), true)
+                              from name in ((CommandExecuteAttribute)attr).Names
+                              select new { CommandName=name, Execute=m };
+
+            var canExecuteData = from m in methods.Cast<MemberInfo>().Concat(properties)
+                                 from attr in m.GetCustomAttributes(typeof(CommandCanExecuteAttribute), true)
+                                 from name in ((CommandCanExecuteAttribute)attr).Names
+                                 select new { CommandName=name, CanExecute=m };
+
+            var commandData = executeData.GroupJoin(
+                canExecuteData, 
+                e => e.CommandName, 
+                ce => ce.CommandName, 
+                (e, ceCollection) => new {e.CommandName, e.Execute, CanExecute = ceCollection.Select(ce => ce.CanExecute).SingleOrDefault()}
+            );
+
             return new Metadata
             {
-                Dependencies = GetDependencies(viewModelType)
-            };    
+                CommandFactories = commandData.ToDictionary(d => d.CommandName, d => new CommandFactory(d.Execute, d.CanExecute))
+            };
         }
 
-        private static Dictionary<string, string[]> GetDependencies(Type viewModelType)
+        /// <summary>
+        /// Returns the <see cref="T:System.Dynamic.DynamicMetaObject"/> responsible for binding operations performed on this object.
+        /// </summary>
+        /// <returns>
+        /// The <see cref="T:System.Dynamic.DynamicMetaObject"/> to bind this object.
+        /// </returns>
+        /// <param name="parameter">The expression tree representation of the runtime value.</param>
+        public DynamicMetaObject GetMetaObject(Expression parameter)
         {
-            var result = new Dictionary<string, string[]>();
-            var graph = new Dictionary<string, HashSet<string>>();
+            return new ViewModelMeta(parameter, this, _backingVariables);
+        }
 
-            foreach (var property in viewModelType.GetProperties())
+        private sealed class CommandFactory
+        {
+            private readonly Func<ViewModel, Action<object>> _executeBinder;
+            private readonly Func<ViewModel, Func<object, bool>> _canExecuteBinder;
+
+            public CommandFactory(MethodInfo executeMethod, MemberInfo canExecuteMember)
             {
-                var attrs = property.GetCustomAttributes(typeof(DependsOnPropertiesAttribute), true);
-                if (attrs.Length == 0)
-                    continue;
+                if (executeMethod == null)
+                    throw new ArgumentNullException("executeMethod");
 
-                foreach (var name in attrs.Cast<DependsOnPropertiesAttribute>().SelectMany(a => a.Names))
+                _executeBinder = CreateExecuteBinder(executeMethod);
+                if (canExecuteMember != null)
                 {
-                    HashSet<string> deps;
-                    if (!graph.TryGetValue(name, out deps))
-                    {
-                        deps = new HashSet<string>();
-                        graph.Add(name, deps);
-                    }
-
-                    deps.Add(property.Name);
-                }
+                    if (canExecuteMember is PropertyInfo)
+                        _canExecuteBinder = CreateCanExecuteBinder((PropertyInfo)canExecuteMember);
+                    else
+                        _canExecuteBinder = CreateCanExecuteBinder((MethodInfo)canExecuteMember);
+                }    
             }
 
-            while (graph.Count > 0)
-                Resolve(graph.First().Key, graph, result);
-
-            return result;
-        }
-
-        private static void Resolve(string name, Dictionary<string, HashSet<string>> graph, Dictionary<string, string[]> resolved)
-        {
-            HashSet<string> unresolvedNames;
-            if (!graph.TryGetValue(name, out unresolvedNames))
-                return;
-
-            foreach (var unresolvedName in unresolvedNames.ToArray())
+            public DelegateCommandBase Create(ViewModel viewModel)
             {
-                Resolve(unresolvedName, graph, resolved);
+                if (_canExecuteBinder == null)
+                    return new DelegateCommand<object>(_executeBinder(viewModel));
 
-                string[] resolvedNames;
-                if (resolved.TryGetValue(name, out resolvedNames))
-                    unresolvedNames.UnionWith(resolvedNames);
+                return new DelegateCommand<object>(_executeBinder(viewModel), _canExecuteBinder(viewModel));
+            }
+            
+            private static Func<ViewModel, Func<object, bool>> CreateCanExecuteBinder(PropertyInfo canExecuteProperty)
+            {
+                if (!typeof(bool).IsAssignableFrom(canExecuteProperty.PropertyType))
+                {
+                    throw new ArgumentException(
+                        string.Format(
+                            "Property {0}.{1} must be of bool type to be used as the CanExecute method for a command.", 
+                            canExecuteProperty.DeclaringType.Name, 
+                            canExecuteProperty.Name
+                            ), 
+                        "canExecuteMethod"
+                    );
+                }
+
+                return vm => o => (bool)canExecuteProperty.GetValue(vm, null);
             }
 
-            if (unresolvedNames.Count > 0)
-                resolved.Add(name, unresolvedNames.ToArray());
+            private static Func<ViewModel, Func<object, bool>> CreateCanExecuteBinder(MethodInfo canExecuteMethod)
+            {
+                var parameters = canExecuteMethod.GetParameters();
+                if (parameters.Length > 1)
+                {
+                    throw new ArgumentException(
+                        string.Format(
+                            "Method {0}.{1} can only have zero or one parameters to be used as the CanExecute method for a command.", 
+                            canExecuteMethod.DeclaringType.Name, 
+                            canExecuteMethod.Name
+                            ), 
+                        "canExecuteMethod"
+                    );
+                }
 
-            graph.Remove(name);
+                if (!typeof(bool).IsAssignableFrom(canExecuteMethod.ReturnType))
+                {
+                    throw new ArgumentException(
+                        string.Format(
+                            "Method {0}.{1} must return bool to be used as the CanExecute method for a command.", 
+                            canExecuteMethod.DeclaringType.Name, 
+                            canExecuteMethod.Name
+                            ), 
+                        "canExecuteMethod"
+                    );
+                }
+
+                if (parameters.Length == 0)
+                    return vm => o => (bool)canExecuteMethod.Invoke(vm, null);
+
+                return vm => o => (bool)canExecuteMethod.Invoke(vm, new[]{o});
+            }
+
+            private static Func<ViewModel, Action<object>> CreateExecuteBinder(MethodInfo executeMethod)
+            {
+                var parameters = executeMethod.GetParameters();
+                if (parameters.Length > 1)
+                {
+                    throw new ArgumentException(
+                        string.Format(
+                            "Method {0}.{1} can only have zero or one parameters to be used as the Execute method for a command.", 
+                            executeMethod.DeclaringType.Name, 
+                            executeMethod.Name
+                            ), 
+                        "executeMethod"
+                    );
+                }
+
+                if (parameters.Length == 0)
+                    return vm => o => executeMethod.Invoke(vm, null);
+
+                return vm => o => executeMethod.Invoke(vm, new[]{o});
+            }
+
         }
+    }
+
+    public class ViewModelMeta : DynamicMetaObject
+    {
+        private readonly ConcurrentDictionary<string, object> _backingVariables;
+
+        public ViewModelMeta(Expression expression, ViewModel value, ConcurrentDictionary<string, object> backingVariables)
+            : base(expression, BindingRestrictions.Empty, value)
+        {
+            _backingVariables = backingVariables;
+        }
+
+        public override DynamicMetaObject BindGetMember(GetMemberBinder binder)
+        {
+            object value;
+            if (!_backingVariables.TryGetValue(binder.Name, out value))
+                return binder.FallbackGetMember(this);
+
+            var expViewModel = Expression.Convert(Expression, typeof(ViewModel));
+            var target = Expression.Call(expViewModel, "GetProperty", new[]{typeof(object)}, Expression.Constant(binder.Name), Expression.Constant(null));
+            var restrictions = BindingRestrictions.GetInstanceRestriction(Expression, Value);
+
+            return new DynamicMetaObject(target, restrictions);
+        }
+
     }
 }
