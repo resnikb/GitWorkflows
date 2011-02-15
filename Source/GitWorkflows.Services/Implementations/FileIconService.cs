@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.ComponentModel.Composition;
 using System.Runtime.InteropServices;
 using System.Windows;
@@ -12,9 +13,19 @@ namespace GitWorkflows.Services.Implementations
     [Export(typeof(IFileIconService))]
     public class FileIconService : IFileIconService
     {
-        public ImageSource GetIcon(string path)
+        private readonly ConcurrentDictionary<Path, ImageSource> _cachedFileIcons = new ConcurrentDictionary<Path, ImageSource>();
+        private readonly ConcurrentDictionary<string, ImageSource> _cachedExtensionIcons = new ConcurrentDictionary<string, ImageSource>();
+
+        public ImageSource GetIcon(Path path)
+        { return _cachedFileIcons.GetOrAdd(path, CreateFileIcon); }
+
+        private ImageSource CreateFileIcon(Path path)
         {
-            return CreateIcon(path);
+            var extension = path.HasExtension ? path.Extension.ToLowerInvariant() : null;
+            if (extension == null || extension == ".exe" || extension == ".dll")
+                return CreateIcon(path);
+
+            return _cachedExtensionIcons.GetOrAdd(extension, _ => CreateIcon(path));
         }
 
         private static ImageSource CreateIcon(string path)

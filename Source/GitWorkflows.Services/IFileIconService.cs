@@ -1,4 +1,5 @@
 using System.Windows.Media;
+using GitWorkflows.Common;
 
 namespace GitWorkflows.Services
 {
@@ -14,6 +15,6 @@ namespace GitWorkflows.Services
         /// <param name="path">The path to the file.</param>
         /// 
         /// <returns>Image for the given file.</returns>
-        ImageSource GetIcon(string path);
+        ImageSource GetIcon(Path path);
     }
 }
