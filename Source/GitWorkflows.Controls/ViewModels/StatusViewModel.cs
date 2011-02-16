@@ -33,6 +33,9 @@ namespace GitWorkflows.Controls.ViewModels
         public Status Status
         { get; private set; }
 
+        public string ProjectName
+        { get; set; }
+
         public StatusViewModel(IRepositoryService repositoryService, IFileIconService iconService, Status status)
         {
             Status = status;

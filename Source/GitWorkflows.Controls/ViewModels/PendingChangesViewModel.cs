@@ -15,7 +15,7 @@ namespace GitWorkflows.Controls.ViewModels
 {
     [Export]
     [PartCreationPolicy(CreationPolicy.NonShared)]
-    public class PendingChangesViewModel : ViewModel
+    public class PendingChangesViewModel : ViewModel, IPartImportsSatisfiedNotification
     {
         private readonly IRepositoryService _repositoryService;
         private readonly IFileIconService _iconService;
@@ -34,9 +34,8 @@ namespace GitWorkflows.Controls.ViewModels
             _repositoryService = repositoryService;
             _iconService = iconService;
             Changes = new ObservableCollection<StatusViewModel>();
-                
+
             workingTreeChangedEvent.Subscribe(Refresh, ThreadOption.UIThread);
-            Refresh(repositoryService);
         }
 
         private void Refresh(IRepositoryService repositoryService)
@@ -44,8 +43,13 @@ namespace GitWorkflows.Controls.ViewModels
             Changes.Clear();
             repositoryService.Status.Statuses
                 .Where(s => (s.FileStatus & FileStatus.Ignored) == 0)
-                .Select(s => new StatusViewModel(repositoryService, _iconService, s))
+                .Select(s => CreateStatusViewModel(repositoryService, _iconService, s))
                 .ForEach(Changes.Add);
+        }
+
+        protected virtual StatusViewModel CreateStatusViewModel(IRepositoryService repositoryService, IFileIconService iconService, Status s)
+        {
+            return new StatusViewModel(repositoryService, iconService, s);
         }
 
         [CommandExecute("SelectionChanged")]
@@ -85,5 +89,11 @@ namespace GitWorkflows.Controls.ViewModels
         {
             return _selectedItems.Count > 0;
         }
+
+        /// <summary>
+        /// Called when a part's imports have been satisfied and it is safe to use.
+        /// </summary>
+        public void OnImportsSatisfied()
+        { Refresh(_repositoryService); }
     }
 }

@@ -74,6 +74,25 @@ namespace GitWorkflows.Package.Implementations
             }
         }
 
+        public string GetNameOfParentProject(Path path)
+        {
+            var actualPath = path.ActualPath;
+            var prio = new VSDOCUMENTPRIORITY[1];
+            foreach (var project in GetControllableProjects().OfType<IVsProject2>())
+            {
+                int pfFound;
+                uint itemid;
+                if ( ErrorHandler.Succeeded(project.IsDocumentInProject(actualPath, out pfFound, prio, out itemid)) && pfFound != 0 )
+                {
+                    object name;
+                    ((IVsHierarchy)project).GetProperty((uint)VSConstants.VSITEMID.Root, (int)__VSHPROPID.VSHPROPID_Name, out name);
+                    return (string)name;
+                }
+            }
+
+            return null;
+        }
+
         public void RefreshSourceControlIcons()
         {
             if (!_isRefreshEnabled)
