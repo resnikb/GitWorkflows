@@ -17,13 +17,10 @@ namespace GitWorkflows.Services.Implementations
         private readonly ConcurrentDictionary<string, ImageSource> _cachedExtensionIcons = new ConcurrentDictionary<string, ImageSource>();
 
         public ImageSource GetIcon(Path path)
-        { return _cachedFileIcons.GetOrAdd(path, CreateFileIcon); }
-
-        private ImageSource CreateFileIcon(Path path)
         {
             var extension = path.HasExtension ? path.Extension.ToLowerInvariant() : null;
             if (extension == null || extension == ".exe" || extension == ".dll")
-                return CreateIcon(path);
+                return _cachedFileIcons.GetOrAdd(path, _ => CreateIcon(path));
 
             return _cachedExtensionIcons.GetOrAdd(extension, _ => CreateIcon(path));
         }
