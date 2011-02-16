@@ -123,9 +123,17 @@
     <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GitWorkflows.Common\GitWorkflows.Common.csproj">
+      <Project>{D9BD73D9-942C-4263-A698-8B03B854DB0E}</Project>
+      <Name>GitWorkflows.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\GitWorkflows.Controls\GitWorkflows.Controls.csproj">
       <Project>{D559F8B2-1033-43CA-8BE7-94030FF7EA5E}</Project>
       <Name>GitWorkflows.Controls</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GitWorkflows.Services\GitWorkflows.Services.csproj">
+      <Project>{01D52E44-1B0F-4B5E-AE39-A4B0C3C4D8E1}</Project>
+      <Name>GitWorkflows.Services</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
