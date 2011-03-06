@@ -125,6 +125,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Implementations\SolutionService.cs" />
+    <Compile Include="Implementations\VSPendingChangesViewModel.cs" />
     <Compile Include="Interfaces\ISolutionService.cs" />
     <Compile Include="PackageCommands\CommandRefreshSccIcons.cs" />
     <Compile Include="PackageCommands\CommandReloadSolution.cs" />

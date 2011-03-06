@@ -1,6 +1,11 @@
+using System;
+using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.ComponentModel.Design;
 using System.Reflection;
 using System.Windows;
+using GitWorkflows.Common;
+using GitWorkflows.Services;
 using Microsoft.Practices.Prism.MefExtensions;
 
 namespace GitWorkflows.Application
@@ -26,7 +31,11 @@ namespace GitWorkflows.Application
         /// attached property from XAML.
         /// </remarks>
         protected override DependencyObject CreateShell()
-        { return new MainWindow(); }
+        {
+            var viewModel = Container.GetExportedValue<ShellViewModel>();
+            var viewService = Container.GetExportedValue<IViewService>();
+            return viewService.CreateView(viewModel);
+        }
 
         /// <summary>
         /// Initializes the shell.
@@ -50,8 +59,35 @@ namespace GitWorkflows.Application
         /// </remarks>
         protected override void ConfigureAggregateCatalog()
         {
-            var thisAssemblyPath = Assembly.GetExecutingAssembly().Location;
-            AggregateCatalog.Catalogs.Add(new DirectoryCatalog(System.IO.Path.GetDirectoryName(thisAssemblyPath)));
+            var thisAssembly = Assembly.GetExecutingAssembly();
+            var appDirectory = System.IO.Path.GetDirectoryName(thisAssembly.Location);
+
+            var catalogs = new[]
+            {
+                new AssemblyCatalog(thisAssembly),
+                new AssemblyCatalog(System.IO.Path.Combine(appDirectory, "GitWorkflows.Services.dll")),
+                new AssemblyCatalog(System.IO.Path.Combine(appDirectory, "GitWorkflows.Controls.dll")),
+            };
+
+            catalogs.ForEach(AggregateCatalog.Catalogs.Add);
+        }
+
+        /// <summary>
+        /// Configures the <see cref="T:System.ComponentModel.Composition.Hosting.CompositionContainer"/>.
+        /// May be overwritten in a derived class to add specific type mappings required by the application.
+        /// </summary>
+        /// <remarks>
+        /// The base implementation registers all the types direct instantiated by the bootstrapper with the container.
+        /// If the method is overwritten, the new implementation should call the base class version.
+        /// </remarks>
+        protected override void ConfigureContainer()
+        {
+            base.ConfigureContainer();
+
+            var compositionBatch = new CompositionBatch();
+            compositionBatch.AddExportedValue(Container);
+
+            Container.Compose(compositionBatch);
         }
     }
 }
