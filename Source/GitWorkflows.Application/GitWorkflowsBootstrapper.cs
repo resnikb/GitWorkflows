@@ -5,6 +5,7 @@ using System.ComponentModel.Design;
 using System.Reflection;
 using System.Windows;
 using GitWorkflows.Common;
+using GitWorkflows.Controls;
 using GitWorkflows.Services;
 using Microsoft.Practices.Prism.MefExtensions;
 
@@ -32,6 +33,7 @@ namespace GitWorkflows.Application
         /// </remarks>
         protected override DependencyObject CreateShell()
         {
+            ViewCreatorExtension.Container = Container;
             var viewModel = Container.GetExportedValue<ShellViewModel>();
             var viewService = Container.GetExportedValue<IViewService>();
             return viewService.CreateView(viewModel);

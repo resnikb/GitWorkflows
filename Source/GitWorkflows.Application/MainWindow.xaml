@@ -1,14 +1,17 @@
 ﻿<Window x:Class="GitWorkflows.Application.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:Controls="clr-namespace:GitWorkflows.Controls.Controls;assembly=GitWorkflows.Controls"
-        Title="MainWindow" Height="350" Width="525">
+        xmlns:Controls="clr-namespace:GitWorkflows.Controls;assembly=GitWorkflows.Controls"
+        Title="MainWindow" Height="700" Width="1250">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="2*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="1*"/>
         </Grid.RowDefinitions>
         
-        <Controls:PendingChangesControl Grid.Row="1" DataContext="{Binding PendingChanges}"/>
+        <ContentControl Grid.Row="0" Content="{Controls:ViewCreatorExtension LogViewModel}"/>
+        <GridSplitter Grid.Row="1" Height="3" HorizontalAlignment="Stretch" ResizeDirection="Rows"/>
+        <ContentControl Grid.Row="2" Content="{Controls:ViewCreatorExtension PendingChangesViewModel}"/>
     </Grid>
 </Window>

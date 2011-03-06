@@ -62,20 +62,22 @@ namespace GitWorkflows.Services.Implementations
         protected virtual bool? ShowDialog(Window window)
         { return window.ShowDialog(); }
 
-        protected Lazy<Control, IViewMetadata> CreateView<TViewModel>(TViewModel viewModel, out Control contentControl)
+        protected Lazy<Control, IViewMetadata> CreateView(object viewModel, out Control contentControl)
         {
+            var contractName = viewModel.GetType().Name;
+
             Lazy<Control, IViewMetadata> export;
             try
             {
-                export = _container.GetExport<Control, IViewMetadata>(typeof(TViewModel).Name);
+                export = _container.GetExport<Control, IViewMetadata>(contractName);
             }
             catch (ImportCardinalityMismatchException e)
             {
-                throw new ViewNotFoundException(typeof(TViewModel).Name, e);
+                throw new ViewNotFoundException(contractName, e);
             }
 
             if (export == null)
-                throw new ViewNotFoundException(typeof(TViewModel).Name);
+                throw new ViewNotFoundException(contractName);
 
             contentControl = export.Value;
             contentControl.DataContext = viewModel;
