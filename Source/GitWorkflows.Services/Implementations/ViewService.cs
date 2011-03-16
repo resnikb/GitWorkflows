@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -64,7 +65,15 @@ namespace GitWorkflows.Services.Implementations
 
         protected Lazy<Control, IViewMetadata> CreateView(object viewModel, out Control contentControl)
         {
-            var contractName = viewModel.GetType().Name;
+            var exportAttribute = viewModel.GetType().GetCustomAttributes(false).OfType<ExportAttribute>().SingleOrDefault();
+            
+            string contractName;
+            if (exportAttribute == null)
+                contractName = viewModel.GetType().Name;
+            else if (!string.IsNullOrEmpty(exportAttribute.ContractName))
+                contractName = exportAttribute.ContractName;
+            else
+                contractName = exportAttribute.ContractType.Name;
 
             Lazy<Control, IViewMetadata> export;
             try
