@@ -161,12 +161,35 @@ namespace GitWorkflows.Services.Implementations
 
         public void ResetChanges(IEnumerable<Path> files)
         {
-            var command = new Checkout
-            {
-                FilePaths = files.Select(path => path.GetRelativeTo(BaseDirectory).ActualPath)
-            };
+            var statuses = files.Select(_status.Value.GetStatusOf)
+                                .GroupBy(s => s.FileStatus != FileStatus.Untracked && s.FileStatus != FileStatus.Ignored)
+                                .ToList();
 
-            Git.Execute(command);
+            if (statuses.Any(g => g.Key))
+            {
+                var command = new Checkout
+                {
+                    FilePaths = statuses.First(g => g.Key).Select(s => s.FilePath.GetRelativeTo(BaseDirectory).ActualPath)
+                };
+                Git.Execute(command);
+            }
+
+            if (statuses.Any(g => !g.Key))
+            {
+                statuses.First(g => !g.Key).ForEach(
+                    s =>
+                    { 
+                        try
+                        {
+                            File.Delete(s.FilePath);
+                        }
+                        catch
+                        {
+                        
+                        }
+                    }
+                );
+            }
         }
 
         public void DisplayUnstagedChangesAsync(Path file)
