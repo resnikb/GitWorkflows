@@ -162,7 +162,7 @@ namespace GitWorkflows.Services.Implementations
         public void ResetChanges(IEnumerable<Path> files)
         {
             var statuses = files.Select(_status.Value.GetStatusOf)
-                                .GroupBy(s => s.FileStatus != FileStatus.Untracked && s.FileStatus != FileStatus.Ignored)
+                                .GroupBy(s => (s.FileStatus & FileStatus.Untracked) == 0 && (s.FileStatus & FileStatus.Ignored) == 0)
                                 .ToList();
 
             if (statuses.Any(g => g.Key))
