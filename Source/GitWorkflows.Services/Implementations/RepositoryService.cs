@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reactive.Linq;
 using GitWorkflows.Common;
 using GitWorkflows.Git;
 using GitWorkflows.Git.Commands;
@@ -125,26 +127,19 @@ namespace GitWorkflows.Services.Implementations
                 NotifyFilter = NotifyFilters.Size | NotifyFilters.FileName | NotifyFilters.LastWrite,
             };
 
-            var changeEvents = Observable.FromEvent<FileSystemEventArgs>(e => _watcher.Changed += new FileSystemEventHandler(e), e => _watcher.Changed -= new FileSystemEventHandler(e));
-            var createEvents = Observable.FromEvent<FileSystemEventArgs>(e => _watcher.Created += new FileSystemEventHandler(e), e => _watcher.Created -= new FileSystemEventHandler(e));
-            var deleteEvents = Observable.FromEvent<FileSystemEventArgs>(e => _watcher.Deleted += new FileSystemEventHandler(e), e => _watcher.Deleted -= new FileSystemEventHandler(e));
-            var renameEvents = Observable.FromEvent<FileSystemEventArgs>(e => _watcher.Renamed += new RenamedEventHandler(e), e => _watcher.Renamed -= new RenamedEventHandler(e));
+            var changeEvents = Observable.FromEventPattern<FileSystemEventArgs>(e => _watcher.Changed += new FileSystemEventHandler(e), e => _watcher.Changed -= new FileSystemEventHandler(e));
+            var createEvents = Observable.FromEventPattern<FileSystemEventArgs>(e => _watcher.Created += new FileSystemEventHandler(e), e => _watcher.Created -= new FileSystemEventHandler(e));
+            var deleteEvents = Observable.FromEventPattern<FileSystemEventArgs>(e => _watcher.Deleted += new FileSystemEventHandler(e), e => _watcher.Deleted -= new FileSystemEventHandler(e));
+            var renameEvents = Observable.FromEventPattern<FileSystemEventArgs>(e => _watcher.Renamed += new RenamedEventHandler(e), e => _watcher.Renamed -= new RenamedEventHandler(e));
 
             _subscription = Observable.Merge(changeEvents, createEvents, deleteEvents, renameEvents) 
                 .Select(e => e.EventArgs.FullPath)
-                .BufferWithTime(TimeSpan.FromSeconds(1))
+                .Publish( xs => xs.Buffer(() => xs.Throttle(TimeSpan.FromSeconds(2))) )
                 .Subscribe(
                     changes =>
                     {
-                        var changeList = new List<string>(256);
-                        changes.Subscribe(
-                            changeList.Add, 
-                            () => 
-                            {
-                                if (changeList.Count > 0)
-                                    OnChangesDetected(changeList);
-                            }
-                        );
+                        Debug.Assert(changes.Count > 0, "No changes detected");
+                        OnChangesDetected(changes);
                     }
                 );
 
