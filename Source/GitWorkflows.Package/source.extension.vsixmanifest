@@ -3,7 +3,7 @@
   <Identifier Id="72192aea-3808-4caf-b4e4-8d91038a6f92">
     <Name>Git Workflows</Name>
     <Author>Bojan Resnik</Author>
-    <Version>0.15</Version>
+    <Version>0.1</Version>
     <Description xml:space="preserve">Git Source Control Provider for Visual Studio 2010</Description>
     <Locale>1033</Locale>
     <InstalledByMsi>false</InstalledByMsi>
